@@ -6,7 +6,7 @@ import type { OcrLine } from '@/types/ocr';
  * Runs on-device ML Kit text recognition (Latin script) and returns every line with its bounding
  * box, in pixels of the upright image: EXIF rotation is applied before recognition.
  *
- * `uri` must be a local `file://` URI (iOS also accepts no other kind).
+ * `uri` must be a local `file://` URI.
  */
 export async function recognizeText(uri: string): Promise<OcrLine[]> {
   const result = await recognizeWithMLKit(uri);

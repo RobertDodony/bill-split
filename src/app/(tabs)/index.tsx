@@ -1,4 +1,4 @@
-import { ActivityIndicator, Platform, View } from 'react-native';
+import { ActivityIndicator, View } from 'react-native';
 
 import { Button } from '@/components/ui/Button';
 import { SafeAreaView } from '@/components/ui/SafeAreaView';
@@ -26,11 +26,7 @@ export default function ScanScreen() {
           </ThemedText>
         </View>
 
-        {Platform.OS === 'web' ? (
-          <ThemedText themeColor="mutedForeground" className="text-center">
-            Receipt scanning works on the iOS and Android app only.
-          </ThemedText>
-        ) : busy ? (
+        {busy ? (
           <View className="items-center gap-4 py-6">
             <ActivityIndicator size="large" />
             <ThemedText themeColor="mutedForeground">Reading receipt…</ThemedText>

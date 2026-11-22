@@ -4,7 +4,7 @@
  */
 const nativewindOptions = {
   input: './src/global.css',
-  // 1rem = 16px, so Tailwind's spacing scale maps to pixels as on the web (`p-4` = 16px).
+  // 1rem = 16px, so Tailwind's spacing scale maps to pixels as in Tailwind's defaults (`p-4` = 16px).
   inlineRem: 16,
 };
 

@@ -5,13 +5,13 @@ line items and prices on-device (ML Kit), then lets you correct them and keeps a
 scanned receipts in a local SQLite database.
 
 Receipt scanning needs the native modules in a [development build](https://docs.expo.dev/develop/development-builds/introduction/);
-it does not work in Expo Go or on web.
+it does not work in Expo Go. The app targets Android only.
 
 ## Getting started
 
 ```bash
 yarn install
-yarn expo run:android   # or: yarn expo run:ios — builds and installs the development build
+yarn expo run:android   # builds and installs the development build
 yarn expo start         # start the dev server for an installed development build
 ```
 
@@ -35,7 +35,7 @@ yarn expo start         # start the dev server for an installed development buil
 src/
   app/                 Routes only (Expo Router). Every file here is a screen or a layout.
   components/
-    navigation/        App-level navigation (tab bar; `.web.tsx` variant for web)
+    navigation/        App-level navigation (tab bar)
     receipts/          Receipt-specific UI (item row, history row, totals)
     ui/                Generic building blocks (Button, ThemedText, Image, SafeAreaView)
   constants/           The color palette and shared class names
@@ -58,7 +58,7 @@ Conventions:
 - Screens stay thin. Data loading and side effects live in hooks (`useReceipt`,
   `useReceiptList`, `useReceiptScanner`), so they can be tested on their own.
 - Styling uses [NativeWind](https://www.nativewind.dev/) v4 (Tailwind CSS 3) `className`s.
-  `1rem` is 16px, so the Tailwind spacing scale matches the web (`p-4` = 16px).
+  `1rem` is 16px, so the Tailwind spacing scale matches Tailwind's defaults (`p-4` = 16px).
 - The app is dark-only and uses Tailwind's default palette (`bg-zinc-900`, `text-red-500`, …),
   so there are no `dark:` variants. Props that need a raw color value (`placeholderTextColor`,
   the native tab bar) read it from `tailwindcss/colors`.
@@ -66,7 +66,6 @@ Conventions:
   `src/components/ui/` (`Image`, `SafeAreaView`) rather than importing them directly.
 - Set text colors with `ThemedText`'s `themeColor` prop, not in `className`: two color classes on
   one element don't override each other predictably.
-- Platform-specific files use the `.web.tsx` / `.ios.tsx` / `.android.tsx` suffixes.
 
 ## Testing
 

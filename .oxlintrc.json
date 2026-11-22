@@ -30,7 +30,6 @@
   },
   "ignorePatterns": [
     "android/**",
-    "ios/**",
     "dist/**",
     "coverage/**",
     ".expo/**",

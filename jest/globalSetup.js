@@ -19,7 +19,7 @@ module.exports = async function compileNativewindStyles() {
 
   // The NativeWind Tailwind preset emits native styles only when it knows the target OS.
   const previousOS = process.env.NATIVEWIND_OS;
-  process.env.NATIVEWIND_OS = 'ios';
+  process.env.NATIVEWIND_OS = 'android';
   try {
     const { css } = await postcss([
       tailwindcss({ config: path.join(root, 'tailwind.config.ts') }),

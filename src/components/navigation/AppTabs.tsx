@@ -1,7 +1,7 @@
 import { NativeTabs } from 'expo-router/native-tabs';
 import colors from 'tailwindcss/colors';
 
-/** Native bottom tabs on iOS and Android. The web version lives in `AppTabs.web.tsx`. */
+/** Native bottom tabs. */
 export function AppTabs() {
   return (
     <NativeTabs

@@ -6,7 +6,6 @@ node_modules/
 # Expo
 .expo/
 dist/
-web-build/
 expo-env.d.ts
 
 # Native
@@ -40,7 +39,6 @@ yarn-error.*
 coverage/
 
 # generated native folders
-/ios
 /android
 
 # vscode

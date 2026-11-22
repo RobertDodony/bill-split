@@ -1,5 +1,5 @@
 import { router, Stack, useLocalSearchParams } from 'expo-router';
-import { Alert, FlatList, KeyboardAvoidingView, Platform, Pressable, View } from 'react-native';
+import { Alert, FlatList, Pressable, View } from 'react-native';
 
 import { ItemRow } from '@/components/receipts/ItemRow';
 import { ReceiptTotals } from '@/components/receipts/ReceiptTotals';
@@ -44,11 +44,7 @@ export default function ReceiptScreen() {
           ),
         }}
       />
-      <KeyboardAvoidingView
-        className="max-w-content flex-1"
-        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-        keyboardVerticalOffset={100}
-      >
+      <View className="max-w-content flex-1">
         <SafeAreaView className="flex-1" edges={['bottom', 'left', 'right']}>
           <FlatList
             data={items}
@@ -88,7 +84,7 @@ export default function ReceiptScreen() {
             }
           />
         </SafeAreaView>
-      </KeyboardAvoidingView>
+      </View>
     </View>
   );
 }
