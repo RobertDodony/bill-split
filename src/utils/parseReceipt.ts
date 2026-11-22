@@ -211,9 +211,12 @@ export function parseReceiptRows(rows: string[]): ParsedReceipt {
   return { items, detectedTotal: undefined };
 }
 
+// Copy-then-sort instead of toSorted() (and the no-array-sort disables below): the Hermes build on
+// device may not have toSorted — it threw "undefined is not a function" when scanning.
 /** Group OCR lines into visual rows by vertical-center overlap, then sort each row left→right. */
 export function groupIntoRows(lines: OcrLine[]): string[] {
-  const sorted = lines.toSorted((a, b) => a.top - b.top);
+  // oxlint-disable-next-line unicorn/no-array-sort -- sorts a copy; see note above
+  const sorted = [...lines].sort((a, b) => a.top - b.top);
   const rows: { center: number; height: number; lines: OcrLine[] }[] = [];
 
   for (const line of sorted) {
@@ -227,16 +230,17 @@ export function groupIntoRows(lines: OcrLine[]): string[] {
     }
   }
 
+  rows.sort((a, b) => a.center - b.center);
   return rows
-    .toSorted((a, b) => a.center - b.center)
-    .map((r) =>
-      r.lines
-        .toSorted((a, b) => a.left - b.left)
+    .map((r) => {
+      // oxlint-disable-next-line unicorn/no-array-sort -- sorts a copy; see note above
+      const rowLines = [...r.lines].sort((a, b) => a.left - b.left);
+      return rowLines
         .map((l) => l.text.trim())
         .join(' ')
         .replace(/\s+/g, ' ')
-        .trim()
-    )
+        .trim();
+    })
     .filter(Boolean);
 }
 
