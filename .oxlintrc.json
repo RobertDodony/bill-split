@@ -1,0 +1,90 @@
+{
+  "$schema": "./node_modules/oxlint/configuration_schema.json",
+  "plugins": [
+    "eslint",
+    "typescript",
+    "unicorn",
+    "oxc",
+    "react",
+    "import",
+    "jsx-a11y",
+    "jest",
+    "promise"
+  ],
+  "categories": {
+    "correctness": "error",
+    "suspicious": "warn",
+    "perf": "warn"
+  },
+  "options": {
+    "typeAware": true
+  },
+  "env": {
+    "browser": true,
+    "es2024": true
+  },
+  "settings": {
+    "react": {
+      "version": "19.3.0"
+    }
+  },
+  "ignorePatterns": [
+    "android/**",
+    "ios/**",
+    "dist/**",
+    "coverage/**",
+    ".expo/**",
+    "expo-env.d.ts",
+    "nativewind-env.d.ts"
+  ],
+  "rules": {
+    "react/react-in-jsx-scope": "off",
+    "import/no-unassigned-import": [
+      "warn",
+      {
+        "allow": ["**/*.css"]
+      }
+    ],
+    "react/no-unstable-nested-components": [
+      "warn",
+      {
+        "allowAsProps": true
+      }
+    ]
+  },
+  "overrides": [
+    {
+      "files": ["*.config.js", "*.config.ts", "nativewind.options.js", "jest/**/*.js"],
+      "env": {
+        "node": true,
+        "commonjs": true
+      },
+      "rules": {
+        "typescript/no-require-imports": "off"
+      }
+    },
+    {
+      "files": [
+        "jest/**/*.js",
+        "**/*.test.ts",
+        "**/*.test.tsx",
+        "src/__tests__/**",
+        "src/test-utils/**"
+      ],
+      "env": {
+        "jest": true
+      },
+      "rules": {
+        "typescript/no-unsafe-type-assertion": "off",
+        "unicorn/consistent-function-scoping": "off",
+        "oxc/no-map-spread": "off"
+      }
+    },
+    {
+      "files": ["jest/**/*.js"],
+      "rules": {
+        "import/no-unassigned-import": "off"
+      }
+    }
+  ]
+}

@@ -1,0 +1,40 @@
+{
+  "description": "Lidl: VAT codes before the names, a repeated item, and a weighed item whose price is on the line below.",
+  "image": "12681.jpg",
+  "rows": [
+    "LIDL MAGYARORSZÁG BT.",
+    "1037 BUDAPEST RÁDL ÁROK 6",
+    "ÜZLET: 333",
+    "1082 Budapest Leonardo da Vinci utca 23.",
+    "ADÓSZÁM: 21588017-2-44",
+    ["-----", "NYUGTA", "-----"],
+    ["B00 Trappista light", "639"],
+    ["B00 Trappista light", "639"],
+    ["C00 Nem.szel.vál.bo(7)", "799"],
+    ["B00 Pr.Mousse,csoki(9)", "399"],
+    ["B00 Pr.Mousse,csoki(9)", "399"],
+    ["B00 Pr.Mousse,csoki(9)", "399"],
+    ["B00 Pr.Mousse,csoki(9)", "399"],
+    "C00 Banán kg",
+    ["0,712 KG * 399 Ft/KG", "284"],
+    "------------------------------------",
+    ["ÖSSZESEN:", "3 957 Ft"],
+    ["Bankkártya:", "3 957 Ft"],
+    "------------------------------------",
+    ["TID:80018294", "2026.11.06 16:40"],
+    ["MID/OPID:", "800080921/0000"]
+  ],
+  "expected": {
+    "items": [
+      { "name": "Trappista light", "price": 639 },
+      { "name": "Trappista light", "price": 639 },
+      { "name": "Nem.szel.vál.bo(7)", "price": 799 },
+      { "name": "Pr.Mousse,csoki(9)", "price": 399 },
+      { "name": "Pr.Mousse,csoki(9)", "price": 399 },
+      { "name": "Pr.Mousse,csoki(9)", "price": 399 },
+      { "name": "Pr.Mousse,csoki(9)", "price": 399 },
+      { "name": "Banán kg", "price": 284 }
+    ],
+    "detectedTotal": 3957
+  }
+}

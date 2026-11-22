@@ -1,0 +1,32 @@
+{
+  "description": "Rossmann: an article-number line above each item, VAT codes after the prices, a discount, and the total amount on the line below 'ÖSSZESEN'.",
+  "image": "12684.jpg",
+  "rows": [
+    "ROSSMANN MAGYARORSZÁG KFT",
+    "2225 ÜLLŐ SÓDERES KÖZ 6",
+    "ROSSMANN 235.",
+    "1082 BUDAPEST CORVIN SÉTÁNY 1 A-D ÉP.",
+    "ADÓSZÁM:11149769-2-44",
+    ["------------", "NYUGTA", "------------"],
+    ["CIKKSZ M:", "40471 1 DB X 255 Ft"],
+    ["! ISANA MEN TUSF.SEN", "255", "C00"],
+    ["CIKKSZ M:", "73225 1 DB X 2 760 Ft"],
+    ["! ZEWA TOPA JAZMIN 1", "2 760", "C00"],
+    ["ENGEDMÉNY", "-552e", "C00"],
+    "[11.02 A 20% ZEWA TOP]",
+    "------------------------------------",
+    "ÖSSZESEN:",
+    "2 463 Ft",
+    "------------------------------------",
+    "BANKKÁRTYA:",
+    "2 463 Ft"
+  ],
+  "expected": {
+    "items": [
+      { "name": "ISANA MEN TUSF.SEN", "price": 255 },
+      { "name": "ZEWA TOPA JAZMIN 1", "price": 2760 },
+      { "name": "ENGEDMÉNY", "price": -552 }
+    ],
+    "detectedTotal": 2463
+  }
+}

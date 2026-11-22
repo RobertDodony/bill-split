@@ -6,7 +6,7 @@
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
     "scheme": "szamlaeloszto",
-    "userInterfaceStyle": "automatic",
+    "userInterfaceStyle": "dark",
     "ios": {
       "icon": "./assets/expo.icon"
     },
@@ -21,6 +21,7 @@
       "package": "com.dodomagicc.szamlaeloszto"
     },
     "web": {
+      "bundler": "metro",
       "output": "server",
       "favicon": "./assets/images/favicon.png"
     },

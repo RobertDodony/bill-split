@@ -1,0 +1,173 @@
+import { Stack } from 'expo-router';
+import { act, fireEvent, renderRouter, screen, testRouter } from 'expo-router/testing-library';
+import { Alert, Text, type AlertButton } from 'react-native';
+import colors from 'tailwindcss/colors';
+
+import ReceiptScreen from '@/app/receipt/[id]';
+import { useReceipt } from '@/hooks/useReceipt';
+import { makeItem, makeReceipt } from '@/test-utils/fixtures';
+import { queryAllByProps } from '@/test-utils/queries';
+
+jest.mock('@/hooks/useReceipt');
+
+const bread = makeItem({ id: 1, name: 'KENYÉR', price: 599 });
+const milk = makeItem({ id: 2, name: 'TEJ', price: 329, position: 1 });
+
+function mockReceipt(overrides: Partial<ReturnType<typeof useReceipt>> = {}) {
+  const value: ReturnType<typeof useReceipt> = {
+    receipt: makeReceipt({ id: 7, detected_total: 928 }),
+    items: [bread, milk],
+    total: 928,
+    updateItem: jest.fn(),
+    deleteItem: jest.fn(),
+    addItem: jest.fn(),
+    deleteReceipt: jest.fn().mockResolvedValue(undefined),
+    ...overrides,
+  };
+  jest.mocked(useReceipt).mockReturnValue(value);
+  return value;
+}
+
+/** Opens the receipt from a home screen, so the screen has somewhere to go back to. */
+async function openReceipt(id = 7) {
+  await renderRouter({
+    _layout: () => <Stack />,
+    index: () => <Text>Home</Text>,
+    'receipt/[id]': ReceiptScreen,
+  });
+  await testRouter.push(`/receipt/${id}`);
+}
+
+describe('ReceiptScreen', () => {
+  it('loads the receipt from the route', async () => {
+    mockReceipt();
+
+    await openReceipt(7);
+
+    expect(useReceipt).toHaveBeenCalledWith(7);
+  });
+
+  it('shows the receipt date as the title', async () => {
+    mockReceipt();
+
+    await openReceipt();
+
+    expect(queryAllByProps(screen.container, { title: '2026. 01. 05. 14:03' })).toHaveLength(1);
+  });
+
+  it('shows a generic title while loading', async () => {
+    mockReceipt({ receipt: null, items: [], total: 0 });
+
+    await openReceipt();
+
+    expect(queryAllByProps(screen.container, { title: 'Receipt' })).toHaveLength(1);
+  });
+
+  it('shows the receipt photo', async () => {
+    mockReceipt();
+
+    await openReceipt();
+
+    expect(screen.getByTestId('receipt-image')).toBeOnTheScreen();
+  });
+
+  it('has no photo when none was saved', async () => {
+    mockReceipt({ receipt: makeReceipt({ image_uri: null }) });
+
+    await openReceipt();
+
+    expect(screen.queryByTestId('receipt-image')).not.toBeOnTheScreen();
+  });
+
+  it('lists the items with the totals', async () => {
+    mockReceipt();
+
+    await openReceipt();
+
+    expect(screen.getByDisplayValue('KENYÉR')).toBeOnTheScreen();
+    expect(screen.getByDisplayValue('TEJ')).toBeOnTheScreen();
+    expect(screen.getByText('Total (2 items)')).toBeOnTheScreen();
+    expect(screen.getByText('Total printed on receipt')).toBeOnTheScreen();
+  });
+
+  it('explains what to do when there are no items', async () => {
+    mockReceipt({ items: [], total: 0 });
+
+    await openReceipt();
+
+    expect(screen.getByText('No items. Add one below.')).toBeOnTheScreen();
+  });
+
+  it('adds an item', async () => {
+    const receipt = mockReceipt();
+    await openReceipt();
+
+    await fireEvent.press(screen.getByRole('button', { name: '+ Add item' }));
+
+    expect(receipt.addItem).toHaveBeenCalled();
+  });
+
+  it('saves an edited item', async () => {
+    const receipt = mockReceipt();
+    await openReceipt();
+
+    const name = screen.getByDisplayValue('TEJ');
+    await fireEvent.changeText(name, 'TEJ 1L');
+    await fireEvent(name, 'endEditing');
+
+    expect(receipt.updateItem).toHaveBeenCalledWith(2, { name: 'TEJ 1L', price: 329 });
+  });
+
+  it('deletes an item', async () => {
+    const receipt = mockReceipt();
+    await openReceipt();
+
+    await fireEvent.press(screen.getAllByRole('button', { name: 'Delete item' })[0]);
+
+    expect(receipt.deleteItem).toHaveBeenCalledWith(1);
+  });
+
+  describe('deleting the receipt', () => {
+    let alert: jest.SpyInstance;
+
+    beforeEach(() => {
+      alert = jest.spyOn(Alert, 'alert').mockImplementation(() => {});
+    });
+
+    afterEach(() => alert.mockRestore());
+
+    const alertButton = (text: string): AlertButton =>
+      (alert.mock.lastCall[2] as AlertButton[]).find((b) => b.text === text)!;
+
+    it('has a red Delete button in the header', async () => {
+      mockReceipt();
+      await openReceipt();
+
+      expect(screen.getByText('Delete')).toHaveStyle({ color: colors.red[500] });
+    });
+
+    it('asks for confirmation first', async () => {
+      const receipt = mockReceipt();
+      await openReceipt();
+
+      await fireEvent.press(screen.getByRole('button', { name: 'Delete' }));
+
+      expect(alert).toHaveBeenCalledWith('Delete receipt?', expect.any(String), expect.any(Array));
+      expect(alertButton('Cancel').style).toBe('cancel');
+      expect(receipt.deleteReceipt).not.toHaveBeenCalled();
+    });
+
+    it('deletes the receipt and goes back when confirmed', async () => {
+      const receipt = mockReceipt();
+      await openReceipt();
+      await fireEvent.press(screen.getByRole('button', { name: 'Delete' }));
+
+      await act(async () => {
+        await alertButton('Delete').onPress?.();
+      });
+
+      expect(receipt.deleteReceipt).toHaveBeenCalled();
+      expect(screen).toHavePathname('/');
+    });
+  });
+});

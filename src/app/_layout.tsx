@@ -1,24 +1,31 @@
-import { DarkTheme, DefaultTheme, Stack, ThemeProvider } from 'expo-router';
+import '@/global.css';
+import { DarkTheme, Stack, ThemeProvider } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
-import { SQLiteProvider } from 'expo-sqlite';
-import { useColorScheme } from 'react-native';
+import { SQLiteProvider, type SQLiteDatabase } from 'expo-sqlite';
 
-import { AnimatedSplashOverlay } from '@/components/animated-icon';
-import { migrate } from '@/db/receipts';
+import { DATABASE_NAME, migrate } from '@/db/migrations';
 
-SplashScreen.preventAutoHideAsync();
+// Keep the native splash screen up until the database is ready to render the first screen.
+void SplashScreen.preventAutoHideAsync();
+SplashScreen.setOptions({ fade: true });
+
+async function initDatabase(db: SQLiteDatabase) {
+  try {
+    await migrate(db);
+  } finally {
+    SplashScreen.hide();
+  }
+}
 
 export default function RootLayout() {
-  const colorScheme = useColorScheme();
   return (
-    <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-      <SQLiteProvider databaseName="receipts.db" onInit={migrate}>
+    <ThemeProvider value={DarkTheme}>
+      <SQLiteProvider databaseName={DATABASE_NAME} onInit={initDatabase}>
         <Stack>
           <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
           <Stack.Screen name="receipt/[id]" options={{ title: 'Receipt' }} />
         </Stack>
       </SQLiteProvider>
-      <AnimatedSplashOverlay />
     </ThemeProvider>
   );
 }

@@ -15,13 +15,17 @@ This project uses yarn (`yarn.lock`). Use `yarn` in place of `npx` for local bin
 ```bash
 yarn expo install <package>  # ALWAYS use instead of yarn add — resolves SDK-compatible versions
 yarn expo start              # start the dev server
-yarn expo lint               # lint
+yarn lint                    # oxlint, type-aware (config: .oxlintrc.json); fails on warnings
+yarn lint:fix                # oxlint with auto-fix
+yarn fmt                     # format with oxfmt (config: .oxfmtrc.json; sorts imports and Tailwind classes)
+yarn fmt:check               # check formatting without writing
 yarn tsc --noEmit            # typecheck
+yarn test                    # unit tests (Jest + jest-expo)
 npx expo-doctor             # diagnose dependency and config issues
 yarn expo install --fix      # fix incompatible package versions
 ```
 
-Run lint and typecheck before declaring any task done.
+Run lint, fmt:check, typecheck and tests before declaring any task done. Don't add ESLint or Prettier; disable an oxlint rule only with an `// oxlint-disable-next-line <rule>` and a comment explaining why.
 
 ## Navigation & Routing
 
@@ -33,6 +37,14 @@ Run lint and typecheck before declaring any task done.
 
 Use EAS to build, sign, and submit the app in the cloud (`eas build`, `eas submit`) and to ship over-the-air updates (`eas update`) — no local Xcode or Android Studio required. Run EAS CLI as `yarn dlx eas-cli <command>` (Yarn Berry) or `npx eas-cli@latest <command>`; substitute that for bare `eas` in docs examples.
 Docs: https://docs.expo.dev/eas/index.md
+
+## Code structure & tests
+
+- See the "Project structure" section of `README.md` for where code goes. Components are `PascalCase.tsx`, hooks `useSomething.ts`, everything else `camelCase.ts`.
+- Style with NativeWind `className`s (v4, Tailwind 3). Colors live in `src/constants/colors.ts` and become theme-aware classes (`bg-surface`, `text-danger`); don't use `StyleSheet` or hard-coded colors. Use `useTheme()` only for props that need a raw color.
+- After changing `tailwind.config.ts`, `src/global.css` or `nativewind.options.js`, restart Metro with `yarn expo start --clear`.
+- Every module gets a colocated `*.test.ts(x)`. Route tests go in `src/__tests__/app/` — never put tests inside `src/app/`.
+- Receipt parsing changes must keep `fixtures/receipts/` passing; add a fixture for each new receipt layout.
 
 ## Rules
 

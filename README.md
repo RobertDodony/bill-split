@@ -1,56 +1,86 @@
-# Welcome to your Expo app 👋
+# Számla elosztó
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+An Expo (React Native) app for scanning receipts. Take a photo of a receipt and the app reads its
+line items and prices on-device (ML Kit), then lets you correct them and keeps a history of
+scanned receipts in a local SQLite database.
 
-## Get started
+Receipt scanning needs the native modules in a [development build](https://docs.expo.dev/develop/development-builds/introduction/);
+it does not work in Expo Go or on web.
 
-1. Install dependencies
-
-   ```bash
-   yarn install
-   ```
-
-2. Start the app
-
-   ```bash
-   yarn expo start
-   ```
-
-In the output, you'll find options to open the app in a
-
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
-
-You can start developing by editing the files inside the **src/app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
-
-## Get a fresh project
-
-When you're ready, run:
+## Getting started
 
 ```bash
-yarn reset-project
+yarn install
+yarn expo run:android   # or: yarn expo run:ios — builds and installs the development build
+yarn expo start         # start the dev server for an installed development build
 ```
 
-This command will move the starter code to the **example** directory and create a blank **src/app** directory where you can start developing.
+## Scripts
 
-### Other setup steps
+| Command              | What it does                     |
+| -------------------- | -------------------------------- |
+| `yarn start`         | Start the Expo dev server        |
+| `yarn test`          | Run the unit tests               |
+| `yarn test:watch`    | Re-run tests on file changes     |
+| `yarn test:coverage` | Run tests with a coverage report |
+| `yarn lint`          | Lint with oxlint (type-aware)    |
+| `yarn lint:fix`      | Lint and auto-fix with oxlint    |
+| `yarn fmt`           | Format with oxfmt                |
+| `yarn fmt:check`     | Check formatting with oxfmt      |
+| `yarn typecheck`     | Type-check with TypeScript       |
 
-- To set up ESLint for linting, run `yarn expo lint`, or follow our guide on ["Using ESLint and Prettier"](https://docs.expo.dev/guides/using-eslint/)
-- If you'd like to set up unit testing, follow our guide on ["Unit Testing with Jest"](https://docs.expo.dev/develop/unit-testing/)
-- Learn more about the TypeScript setup in this template in our guide on ["Using TypeScript"](https://docs.expo.dev/guides/typescript/)
+## Project structure
 
-## Learn more
+```
+src/
+  app/                 Routes only (Expo Router). Every file here is a screen or a layout.
+  components/
+    navigation/        App-level navigation (tab bar; `.web.tsx` variant for web)
+    receipts/          Receipt-specific UI (item row, history row, totals)
+    ui/                Generic building blocks (Button, ThemedText, Image, SafeAreaView)
+  constants/           The color palette and shared class names
+  global.css           Tailwind entry point, imported once in src/app/_layout.tsx
+  db/                  SQLite schema migrations and queries
+  hooks/               React hooks: theming and the data/logic behind each screen
+  services/            Device integrations: OCR, image storage, the scan pipeline
+  types/               Shared TypeScript types
+  utils/               Pure functions: price/date formatting, receipt text parsing
+  test-utils/          Test helpers (in-memory SQLite, fixtures, queries)
+  __tests__/app/       Tests for routes (they can't live inside src/app)
+fixtures/receipts/     Real receipt photos with their expected parse results (see its README)
+jest/                  Jest setup: compiles the NativeWind styles for tests
+```
 
-To learn more about developing your project with Expo, look at the following resources:
+Conventions:
 
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
+- Components are `PascalCase.tsx` with a named export; hooks are `useSomething.ts`; other
+  modules are `camelCase.ts`.
+- Screens stay thin. Data loading and side effects live in hooks (`useReceipt`,
+  `useReceiptList`, `useReceiptScanner`), so they can be tested on their own.
+- Styling uses [NativeWind](https://www.nativewind.dev/) v4 (Tailwind CSS 3) `className`s.
+  `1rem` is 16px, so the Tailwind spacing scale matches the web (`p-4` = 16px).
+- The app is dark-only and uses Tailwind's default palette (`bg-zinc-900`, `text-red-500`, …),
+  so there are no `dark:` variants. Props that need a raw color value (`placeholderTextColor`,
+  the native tab bar) read it from `tailwindcss/colors`.
+- Third-party components need `cssInterop` before they accept `className`; use the wrappers in
+  `src/components/ui/` (`Image`, `SafeAreaView`) rather than importing them directly.
+- Set text colors with `ThemedText`'s `themeColor` prop, not in `className`: two color classes on
+  one element don't override each other predictably.
+- Platform-specific files use the `.web.tsx` / `.ios.tsx` / `.android.tsx` suffixes.
 
-## Join the community
+## Testing
 
-Join our community of developers creating universal apps.
+Tests use [Jest](https://jestjs.io/) with the `jest-expo` preset and
+[React Native Testing Library](https://callstack.github.io/react-native-testing-library/).
 
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+- Tests sit next to the code they test as `Name.test.ts(x)`. Route tests are the exception:
+  they go in `src/__tests__/app/`, mirroring `src/app/`, because Expo Router treats every file
+  in `src/app/` as a route.
+- Database code runs against a real in-memory SQLite database (`src/test-utils/testDatabase.ts`,
+  built on Node's `node:sqlite`, so Node 22.5+ is required).
+- Route tests use `renderRouter` from `expo-router/testing-library`.
+- Testing Library v14 is async: `await` every `render`, `renderHook`, `fireEvent` and `act`.
+- `className`s resolve to real styles in tests: `jest/globalSetup.js` compiles `global.css` the
+  same way Metro does. Assert colors with `rgba(colors.red[500])` (`rgba` is in `src/test-utils/styles.ts`).
+- The receipt parser is also tested against the real receipts in `fixtures/receipts/`. To see
+  what ML Kit reads from a photo, start the dev server with `EXPO_PUBLIC_LOG_OCR=1`.

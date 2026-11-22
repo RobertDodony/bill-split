@@ -1,0 +1,33 @@
+{
+  "description": "SPAR: column headings below the heading, a weighed item, and 'Nyugati' in the address (not the heading).",
+  "image": "12683.jpg",
+  "rows": [
+    "SPAR Magyarország Kereskedelmi Kft.",
+    "2060 Bicske SPAR út 1.",
+    "8251 Szupermarket",
+    "1066 Budapest Nyugati tér 1-2",
+    "ADÓSZÁM: 10485824-2-07",
+    ["-----", "NYUGTA", "-----"],
+    "ÁFA Megnevezés",
+    ["Menny. Me. Egységár", "Érték"],
+    "------------------------------------",
+    ["C00 KOT.BABÉRLEVÉL E.5G", "216"],
+    "C00 SZŐLŐ ROSÉ KG",
+    ["2,04 KG × 799 Ft/KG", "1 630"],
+    ["C00 SPAR LEBOMLÓ ZACSKÓ", "15"],
+    "------------------------------------",
+    ["ÖSSZESEN:", "1 861 Ft"],
+    ["VISA:", "1 861 Ft"],
+    ["TID: S8251155", "2026.11.11 10:34"],
+    ["TRNID: 0239142", "AUTH 891333"],
+    "VISA"
+  ],
+  "expected": {
+    "items": [
+      { "name": "KOT.BABÉRLEVÉL E.5G", "price": 216 },
+      { "name": "SZŐLŐ ROSÉ KG", "price": 1630 },
+      { "name": "SPAR LEBOMLÓ ZACSKÓ", "price": 15 }
+    ],
+    "detectedTotal": 1861
+  }
+}
