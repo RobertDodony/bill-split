@@ -97,7 +97,9 @@ function startsWithKeyword(key: string, keywords: string[]) {
 
 /** True if `a` and `b` differ by at most one inserted, deleted or replaced character. */
 function withinOneEdit(a: string, b: string) {
-  if (Math.abs(a.length - b.length) > 1) return false;
+  if (Math.abs(a.length - b.length) > 1) {
+    return false;
+  }
   let i = 0;
   let j = 0;
   let edits = 0;
@@ -107,10 +109,14 @@ function withinOneEdit(a: string, b: string) {
       j++;
       continue;
     }
-    if (++edits > 1) return false;
-    if (a.length > b.length) i++;
-    else if (a.length < b.length) j++;
-    else {
+    if (++edits > 1) {
+      return false;
+    }
+    if (a.length > b.length) {
+      i++;
+    } else if (a.length < b.length) {
+      j++;
+    } else {
       i++;
       j++;
     }
@@ -128,7 +134,9 @@ function isHeading(row: string) {
 /** Index of the first row that holds items: below the heading, else below the tax number. */
 function findItemsStart(rows: string[]) {
   const heading = rows.findIndex(isHeading);
-  if (heading !== -1) return heading + 1;
+  if (heading !== -1) {
+    return heading + 1;
+  }
   const taxNumber = rows.findIndex((row) => hasKeyword(normalize(row), [TAX_NUMBER]));
   return taxNumber + 1;
 }
@@ -144,10 +152,14 @@ function cleanName(text: string) {
 
 function splitRow(row: string): { name: string; price?: number } {
   const match = row.match(PRICE_AT_END);
-  if (!match || match.index === undefined) return { name: row };
+  if (!match || match.index === undefined) {
+    return { name: row };
+  }
   const [, amount, gluedLetter] = match;
   // `0,5l` is part of a name; only discounts carry a letter, e.g. `-552e`.
-  if (gluedLetter && !amount.startsWith('-')) return { name: row };
+  if (gluedLetter && !amount.startsWith('-')) {
+    return { name: row };
+  }
   return { name: row.slice(0, match.index).trim(), price: parsePrice(amount) };
 }
 
@@ -169,16 +181,24 @@ export function parseReceiptRows(rows: string[]): ParsedReceipt {
     const { name, price } = splitRow(row);
 
     if (startsWithKeyword(key, TOTAL_KEYWORDS)) {
-      if (price !== undefined) return { items, detectedTotal: price };
+      if (price !== undefined) {
+        return { items, detectedTotal: price };
+      }
       totalLookahead = TOTAL_AMOUNT_LOOKAHEAD;
       continue;
     }
     if (totalLookahead > 0) {
-      if (price !== undefined && !name) return { items, detectedTotal: price };
-      if (--totalLookahead === 0) break;
+      if (price !== undefined && !name) {
+        return { items, detectedTotal: price };
+      }
+      if (--totalLookahead === 0) {
+        break;
+      }
       continue;
     }
-    if (startsWithKeyword(key, PAYMENT_KEYWORDS)) break;
+    if (startsWithKeyword(key, PAYMENT_KEYWORDS)) {
+      break;
+    }
 
     if (hasKeyword(key, SKIP_KEYWORDS) || row.trimStart().startsWith('[')) {
       pendingName = undefined;
@@ -187,7 +207,9 @@ export function parseReceiptRows(rows: string[]): ParsedReceipt {
 
     if (QUANTITY.test(key)) {
       // Weighed or multiplied item: the name is on the row above, the line total at the end.
-      if (pendingName && price !== undefined) items.push({ name: pendingName, price });
+      if (pendingName && price !== undefined) {
+        items.push({ name: pendingName, price });
+      }
       pendingName = undefined;
       continue;
     }

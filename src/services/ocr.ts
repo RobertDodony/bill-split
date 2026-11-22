@@ -15,7 +15,9 @@ export async function recognizeText(uri: string): Promise<OcrLine[]> {
     for (const line of block.lines) {
       const { top, left, bottom, right } = line.frame;
       // A line ML Kit couldn't place comes back with an empty (all-zero) frame.
-      if (right <= left || bottom <= top) continue;
+      if (right <= left || bottom <= top) {
+        continue;
+      }
       lines.push({ text: line.text, top, left, bottom, right });
     }
   }

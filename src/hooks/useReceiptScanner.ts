@@ -41,12 +41,16 @@ export function useReceiptScanner() {
       return;
     }
     const result = await ImagePicker.launchCameraAsync(pickerOptions);
-    if (!result.canceled) await process(result.assets[0].uri);
+    if (!result.canceled) {
+      await process(result.assets[0].uri);
+    }
   };
 
   const pickPhoto = async () => {
     const result = await ImagePicker.launchImageLibraryAsync(pickerOptions);
-    if (!result.canceled) await process(result.assets[0].uri);
+    if (!result.canceled) {
+      await process(result.assets[0].uri);
+    }
   };
 
   return { busy, takePhoto, pickPhoto };

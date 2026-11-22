@@ -8,15 +8,20 @@ export function parsePrice(raw: string): number | undefined {
   const lastDot = s.lastIndexOf('.');
   if (lastComma > -1 && lastDot > -1) {
     // Both present: the later one is the decimal separator.
-    if (lastComma > lastDot) s = s.replace(/\./g, '').replace(',', '.');
-    else s = s.replace(/,/g, '');
+    if (lastComma > lastDot) {
+      s = s.replace(/\./g, '').replace(',', '.');
+    } else {
+      s = s.replace(/,/g, '');
+    }
   } else if (lastComma > -1) {
     s = s.replace(',', '.');
   } else if (lastDot > -1 && /\.\d{3}$/.test(s)) {
     // `1.299` → thousands separator
     s = s.replace(/\./g, '');
   }
-  if (s === '') return undefined;
+  if (s === '') {
+    return undefined;
+  }
   const n = Number(s);
   return Number.isFinite(n) ? n : undefined;
 }

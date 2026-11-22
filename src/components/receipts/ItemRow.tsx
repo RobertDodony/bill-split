@@ -20,7 +20,9 @@ export function ItemRow({ name, price, onChange, onDelete }: ItemRowProps) {
   const commit = () => {
     const parsed = parsePriceInput(priceText);
     const trimmed = nameText.trim();
-    if (trimmed !== name || parsed !== price) onChange({ name: trimmed, price: parsed });
+    if (trimmed !== name || parsed !== price) {
+      onChange({ name: trimmed, price: parsed });
+    }
   };
 
   return (

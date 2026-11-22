@@ -10,7 +10,9 @@ export async function migrate(db: SQLiteDatabase) {
   await db.execAsync('PRAGMA foreign_keys = ON;');
   const row = await db.getFirstAsync<{ user_version: number }>('PRAGMA user_version');
   const version = row?.user_version ?? 0;
-  if (version >= DATABASE_VERSION) return;
+  if (version >= DATABASE_VERSION) {
+    return;
+  }
 
   if (version === 0) {
     await db.execAsync(`

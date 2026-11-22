@@ -21,10 +21,14 @@ export async function persistReceiptImage(tempUri: string): Promise<string> {
 
 /** Deletes a stored receipt image. Missing files and `null` are ignored. */
 export function deleteReceiptImage(uri: string | null) {
-  if (!uri) return;
+  if (!uri) {
+    return;
+  }
   try {
     const file = new File(uri);
-    if (file.exists) file.delete();
+    if (file.exists) {
+      file.delete();
+    }
   } catch {
     // Missing file is fine.
   }

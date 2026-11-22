@@ -38,10 +38,10 @@ src/
     navigation/        App-level navigation (tab bar)
     receipts/          Receipt-specific UI (item row, history row, totals)
     ui/                Generic building blocks (Button, ThemedText, Image, SafeAreaView)
-  constants/           The color palette and shared class names
+  constants/           Shared class names (e.g. tab bar padding)
   global.css           Tailwind entry point, imported once in src/app/_layout.tsx
   db/                  SQLite schema migrations and queries
-  hooks/               React hooks: theming and the data/logic behind each screen
+  hooks/               React hooks: the data and logic behind each screen
   services/            Device integrations: OCR, image storage, the scan pipeline
   types/               Shared TypeScript types
   utils/               Pure functions: price/date formatting, receipt text parsing
@@ -51,12 +51,15 @@ fixtures/receipts/     Real receipt photos with their expected parse results (se
 jest/                  Jest setup: compiles the NativeWind styles for tests
 ```
 
-Conventions:
+Conventions (the full coding guidelines are in [AGENTS.md](AGENTS.md)):
 
+- Always use curly braces for `if`/`else`/`for`/`while` bodies, even one-liners
+  (`if (!uri) return;` is not allowed). oxlint enforces this with `curly: all`.
 - Components are `PascalCase.tsx` with a named export; hooks are `useSomething.ts`; other
   modules are `camelCase.ts`.
-- Screens stay thin. Data loading and side effects live in hooks (`useReceipt`,
-  `useReceiptList`, `useReceiptScanner`), so they can be tested on their own.
+- Code is layered: screens → hooks → services/db → utils. Screens stay thin. Data loading and
+  side effects live in hooks (`useReceipt`, `useReceiptList`, `useReceiptScanner`), so they can
+  be tested on their own.
 - Styling uses [NativeWind](https://www.nativewind.dev/) v4 (Tailwind CSS 3) `className`s.
   `1rem` is 16px, so the Tailwind spacing scale matches Tailwind's defaults (`p-4` = 16px).
 - The app is dark-only and uses Tailwind's default palette (`bg-zinc-900`, `text-red-500`, …),

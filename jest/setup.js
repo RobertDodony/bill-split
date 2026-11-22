@@ -15,7 +15,9 @@ injectData(JSON.parse(fs.readFileSync(COMPILED_STYLES_PATH, 'utf8')));
 // React Native's deprecated ImageBackground, which warns; that warning is not about our code.
 const warn = console.warn;
 console.warn = (message, ...args) => {
-  if (typeof message === 'string' && message.startsWith('ImageBackground is deprecated')) return;
+  if (typeof message === 'string' && message.startsWith('ImageBackground is deprecated')) {
+    return;
+  }
   warn(message, ...args);
 };
 require('react-native-css-interop/dist/runtime/components');
