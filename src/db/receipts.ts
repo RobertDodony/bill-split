@@ -1,10 +1,11 @@
 import type { SQLiteDatabase } from 'expo-sqlite';
 
-import type { ItemFields, Receipt, ReceiptItem, ReceiptSummary } from '@/types/receipt';
+import type { ItemFields, Person, Receipt, ReceiptItem, ReceiptSummary } from '@/types/receipt';
 
 export type NewReceipt = {
   imageUri: string | null;
   detectedTotal?: number;
+  paidBy?: Person | null;
   items: ItemFields[];
 };
 
@@ -13,10 +14,11 @@ export async function createReceipt(db: SQLiteDatabase, data: NewReceipt): Promi
   let id = 0;
   await db.withTransactionAsync(async () => {
     const res = await db.runAsync(
-      'INSERT INTO receipts (created_at, image_uri, detected_total) VALUES (?, ?, ?)',
+      'INSERT INTO receipts (created_at, image_uri, detected_total, paid_by) VALUES (?, ?, ?, ?)',
       Date.now(),
       data.imageUri,
-      data.detectedTotal ?? null
+      data.detectedTotal ?? null,
+      data.paidBy ?? null
     );
     id = res.lastInsertRowId;
     for (const [i, item] of data.items.entries()) {
@@ -46,6 +48,21 @@ export function listReceipts(db: SQLiteDatabase) {
 
 export function getReceipt(db: SQLiteDatabase, id: number) {
   return db.getFirstAsync<Receipt>('SELECT * FROM receipts WHERE id = ?', id);
+}
+
+export async function setPaidBy(db: SQLiteDatabase, receiptId: number, person: Person) {
+  await db.runAsync('UPDATE receipts SET paid_by = ? WHERE id = ?', person, receiptId);
+}
+
+/**
+ * Who paid the most recent receipt that has a payer, or `null` if none does. New receipts start
+ * with this payer, since the same person tends to pay several bills in a row.
+ */
+export async function getLastPaidBy(db: SQLiteDatabase): Promise<Person | null> {
+  const row = await db.getFirstAsync<{ paid_by: Person }>(
+    'SELECT paid_by FROM receipts WHERE paid_by IS NOT NULL ORDER BY created_at DESC, id DESC'
+  );
+  return row?.paid_by ?? null;
 }
 
 /** Deletes a receipt. Its items are removed by the `ON DELETE CASCADE` foreign key. */
