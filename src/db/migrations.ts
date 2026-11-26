@@ -3,7 +3,7 @@ import type { SQLiteDatabase } from 'expo-sqlite';
 export const DATABASE_NAME = 'receipts.db';
 
 /** Bump this and add a migration step below whenever the schema changes. */
-export const DATABASE_VERSION = 2;
+export const DATABASE_VERSION = 3;
 
 /** Brings the database schema up to `DATABASE_VERSION`. Safe to run on every app start. */
 export async function migrate(db: SQLiteDatabase) {
@@ -41,6 +41,20 @@ export async function migrate(db: SQLiteDatabase) {
         name_key TEXT PRIMARY KEY,
         r_share REAL NOT NULL
       );
+    `);
+  }
+  if (version < 3) {
+    // Who paid each receipt, and the settlement that closed it. Receipts without a settlement
+    // are still open: they make up the running balance until the next settle-up.
+    await db.execAsync(`
+      CREATE TABLE IF NOT EXISTS settlements (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        settled_at INTEGER NOT NULL
+      );
+      ALTER TABLE receipts ADD COLUMN paid_by TEXT CHECK (paid_by IN ('R', 'K'));
+      ALTER TABLE receipts ADD COLUMN settlement_id INTEGER
+        REFERENCES settlements(id) ON DELETE SET NULL;
+      CREATE INDEX IF NOT EXISTS receipts_settlement ON receipts(settlement_id);
     `);
   }
   await db.execAsync(`PRAGMA user_version = ${DATABASE_VERSION}`);

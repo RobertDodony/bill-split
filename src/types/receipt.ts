@@ -1,9 +1,23 @@
+/** One of the two people sharing the bills. */
+export type Person = 'R' | 'K';
+
 /** A row of the `receipts` table. */
 export type Receipt = {
   id: number;
   created_at: number;
   image_uri: string | null;
   detected_total: number | null;
+  /** Who paid the receipt. `null` until it's been set. */
+  paid_by: Person | null;
+  /** The settlement that closed the receipt. `null` while it's still open. */
+  settlement_id: number | null;
+};
+
+/** A row of the `settlements` table: one settle-up that closed every receipt open at the time. */
+export type Settlement = {
+  id: number;
+  /** When it was settled, in ms since epoch (shown with `formatDate`). */
+  settled_at: number;
 };
 
 /** A receipt with aggregated item data, as shown in the history list. */
