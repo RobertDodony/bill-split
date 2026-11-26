@@ -6,7 +6,7 @@ import ReceiptScreen from '@/app/receipt/[id]';
 import { COLORS } from '@/constants/theme';
 import { useReceipt } from '@/hooks/useReceipt';
 import { makeItem, makeReceipt } from '@/test-utils/fixtures';
-import { queryAllByProps, queryAllSliders } from '@/test-utils/queries';
+import { isChecked, queryAllByProps, queryAllSliders } from '@/test-utils/queries';
 
 jest.mock('@/hooks/useReceipt');
 
@@ -22,6 +22,8 @@ function mockReceipt(overrides: Partial<ReturnType<typeof useReceipt>> = {}) {
     activeItemId: 1,
     initialShare: () => 50,
     acceptSplit: jest.fn(),
+    paidBy: null,
+    setPaidBy: jest.fn(),
     selectItem: jest.fn(),
     updateItem: jest.fn(),
     deleteItem: jest.fn(),
@@ -82,6 +84,23 @@ describe('ReceiptScreen', () => {
     await openReceipt();
 
     expect(screen.queryByTestId('receipt-image')).not.toBeOnTheScreen();
+  });
+
+  it('shows who paid', async () => {
+    mockReceipt({ paidBy: 'R' });
+
+    await openReceipt();
+
+    expect(isChecked(screen.getByRole('button', { name: 'Paid by R' }))).toBe(true);
+  });
+
+  it('changes who paid', async () => {
+    const receipt = mockReceipt({ paidBy: 'R' });
+    await openReceipt();
+
+    await fireEvent.press(screen.getByRole('button', { name: 'Paid by K' }));
+
+    expect(receipt.setPaidBy).toHaveBeenCalledWith('K');
   });
 
   it('lists the items with the totals', async () => {

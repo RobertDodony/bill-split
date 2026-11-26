@@ -81,6 +81,9 @@ Tests use [Jest](https://jestjs.io/) with the `jest-expo` preset and
   (`@react-native-community/slider`) doesn't: `jest/mocks.js` stands in a plain element that
   carries its props. Find it with `queryAllSliders` from `src/test-utils/queries.ts` and fire
   `valueChange` / `slidingComplete` (with the value) on it.
+- Paper's `SegmentedButtons` (the R/K "Paid by" toggle) are buttons, so `toBeChecked` and
+  `getByRole({ checked })` ignore their checked state. Use `isChecked` from
+  `src/test-utils/queries.ts`.
 - Testing Library v14 is async: `await` every `render`, `renderHook`, `fireEvent` and `act`.
 - Assert colors against the theme: `toHaveStyle({ color: COLORS.error })`.
 - The receipt parser is also tested against the real receipts in `fixtures/receipts/`. To see

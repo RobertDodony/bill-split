@@ -1,7 +1,7 @@
 import type { SQLiteDatabase } from 'expo-sqlite';
 
 import { migrate } from '@/db/migrations';
-import { getItems, getReceipt, listReceipts } from '@/db/receipts';
+import { createReceipt, getItems, getReceipt, listReceipts } from '@/db/receipts';
 import { recognizeText } from '@/services/ocr';
 import { persistReceiptImage } from '@/services/receiptImages';
 import { scanReceipt } from '@/services/scanReceipt';
@@ -62,6 +62,23 @@ describe('scanReceipt', () => {
 
     expect(result.itemCount).toBe(0);
     expect(await getReceipt(db, result.receiptId)).toMatchObject({ detected_total: null });
+  });
+
+  it('starts the receipt with the last payer', async () => {
+    jest.mocked(recognizeText).mockResolvedValue([]);
+    await createReceipt(db, { imageUri: null, paidBy: 'K', items: [] });
+
+    const result = await scanReceipt(db, 'file:///cache/tmp.jpg');
+
+    expect(await getReceipt(db, result.receiptId)).toMatchObject({ paid_by: 'K' });
+  });
+
+  it('starts the first receipt with no payer', async () => {
+    jest.mocked(recognizeText).mockResolvedValue([]);
+
+    const result = await scanReceipt(db, 'file:///cache/tmp.jpg');
+
+    expect(await getReceipt(db, result.receiptId)).toMatchObject({ paid_by: null });
   });
 
   describe('OCR logging', () => {
