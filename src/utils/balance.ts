@@ -69,10 +69,19 @@ export function canSettle(summary: BalanceSummary): boolean {
   return summary.receiptCount > 0 && summary.completeCount === summary.receiptCount;
 }
 
-/** Who owes whom, in words: `K owes R 4 550`, `R owes K 300` or `All square`. */
-export function describeNet(net: number): string {
+function describeTransfer(net: number, verb: 'owes' | 'paid'): string {
   if (Math.abs(net) < SQUARE_TOLERANCE) {
     return 'All square';
   }
-  return net > 0 ? `K owes R ${formatPrice(net)}` : `R owes K ${formatPrice(-net)}`;
+  return net > 0 ? `K ${verb} R ${formatPrice(net)}` : `R ${verb} K ${formatPrice(-net)}`;
+}
+
+/** Who owes whom, in words: `K owes R 4 550`, `R owes K 300` or `All square`. */
+export function describeNet(net: number): string {
+  return describeTransfer(net, 'owes');
+}
+
+/** Who paid whom when a settlement was made: `K paid R 4 550`, `R paid K 300` or `All square`. */
+export function describeSettlement(net: number): string {
+  return describeTransfer(net, 'paid');
 }

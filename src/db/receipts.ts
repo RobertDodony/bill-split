@@ -77,6 +77,11 @@ export function getItems(db: SQLiteDatabase, receiptId: number) {
   );
 }
 
+/** Every item of every receipt, grouped by receipt and in item order. */
+export function listAllItems(db: SQLiteDatabase) {
+  return db.getAllAsync<ReceiptItem>('SELECT * FROM items ORDER BY receipt_id, position, id');
+}
+
 /** Appends an empty item to the end of a receipt and returns it. */
 export async function addItem(db: SQLiteDatabase, receiptId: number): Promise<ReceiptItem> {
   const max = await db.getFirstAsync<{ pos: number | null }>(

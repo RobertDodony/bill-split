@@ -13,7 +13,7 @@ describe('ReceiptListItem', () => {
     );
 
     expect(screen.getByText('2026. 01. 05. 14:03')).toBeOnTheScreen();
-    expect(screen.getByText('3 items')).toBeOnTheScreen();
+    expect(screen.getByText(/^3 items/)).toBeOnTheScreen();
     expect(screen.getByText(/^12\s999,5$/)).toBeOnTheScreen();
   });
 
@@ -22,7 +22,29 @@ describe('ReceiptListItem', () => {
       <ReceiptListItem receipt={makeReceiptSummary({ item_count: 1 })} onPress={jest.fn()} />
     );
 
-    expect(screen.getByText('1 item')).toBeOnTheScreen();
+    expect(screen.getByText(/^1 item /)).toBeOnTheScreen();
+  });
+
+  it('shows who paid', async () => {
+    await render(
+      <ReceiptListItem
+        receipt={makeReceiptSummary({ item_count: 2, paid_by: 'K' })}
+        onPress={jest.fn()}
+      />
+    );
+
+    expect(screen.getByText('2 items · paid by K')).toBeOnTheScreen();
+  });
+
+  it('says when nobody has been picked as the payer', async () => {
+    await render(
+      <ReceiptListItem
+        receipt={makeReceiptSummary({ item_count: 2, paid_by: null })}
+        onPress={jest.fn()}
+      />
+    );
+
+    expect(screen.getByText('2 items · no payer yet')).toBeOnTheScreen();
   });
 
   it('shows the photo as a thumbnail', async () => {

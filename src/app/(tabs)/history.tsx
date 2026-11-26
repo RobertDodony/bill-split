@@ -1,5 +1,5 @@
 import { router } from 'expo-router';
-import { FlatList, StyleSheet, View } from 'react-native';
+import { SectionList, StyleSheet, View } from 'react-native';
 import { Text } from 'react-native-paper';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
@@ -9,7 +9,7 @@ import { COLORS } from '@/constants/theme';
 import { useReceiptList } from '@/hooks/useReceiptList';
 
 export default function HistoryScreen() {
-  const receipts = useReceiptList();
+  const sections = useReceiptList();
 
   return (
     <View style={SCREEN_STYLES.screen}>
@@ -17,9 +17,9 @@ export default function HistoryScreen() {
         <Text variant="headlineLarge" style={styles.title}>
           History
         </Text>
-        <FlatList
+        <SectionList
           testID="receipt-list"
-          data={receipts}
+          sections={sections}
           keyExtractor={(r) => String(r.id)}
           contentContainerStyle={styles.list}
           ListEmptyComponent={
@@ -27,6 +27,14 @@ export default function HistoryScreen() {
               No receipts yet. Scan one first.
             </Text>
           }
+          renderSectionHeader={({ section }) => (
+            <View style={styles.sectionHeader}>
+              <Text variant="titleMedium">{section.title}</Text>
+              <Text variant="bodyMedium" style={styles.muted}>
+                {section.summary}
+              </Text>
+            </View>
+          )}
           renderItem={({ item }) => (
             <ReceiptListItem
               receipt={item}
@@ -44,5 +52,11 @@ export default function HistoryScreen() {
 const styles = StyleSheet.create({
   title: { paddingHorizontal: 24, paddingVertical: 16 },
   list: { gap: 8, paddingHorizontal: 24, paddingBottom: TAB_BAR_PADDING },
+  sectionHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'baseline',
+    paddingTop: 16,
+  },
   muted: { color: COLORS.onSurfaceVariant },
 });

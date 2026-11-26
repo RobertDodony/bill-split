@@ -57,7 +57,7 @@ export default function ScanScreen() {
 
 const styles = StyleSheet.create({
   content: { gap: 24, paddingHorizontal: 24, paddingBottom: TAB_BAR_PADDING },
-  // 24 from the content gap plus 8 leaves 32 between the balance card and the intro.
+  // 24 from the content gap plus 16 leaves 40 between the balance card and the intro.
   intro: { marginTop: 16, gap: 16 },
   center: { textAlign: 'center' },
   muted: { color: COLORS.onSurfaceVariant },

@@ -1,6 +1,12 @@
 import { makeItem } from '@/test-utils/fixtures';
 import type { Person, ReceiptItem } from '@/types/receipt';
-import { canSettle, describeNet, isReceiptComplete, summarizeBalance } from '@/utils/balance';
+import {
+  canSettle,
+  describeNet,
+  describeSettlement,
+  isReceiptComplete,
+  summarizeBalance,
+} from '@/utils/balance';
 
 const receipt = (paidBy: Person | null, items: ReceiptItem[]) => ({ paid_by: paidBy, items });
 
@@ -120,5 +126,16 @@ describe('describeNet', () => {
   it('says all square at zero, including floating-point leftovers', () => {
     expect(describeNet(0)).toBe('All square');
     expect(describeNet(-0.001)).toBe('All square');
+  });
+});
+
+describe('describeSettlement', () => {
+  it('says who paid whom', () => {
+    expect(plainSpaces(describeSettlement(4550))).toBe('K paid R 4 550');
+    expect(describeSettlement(-300)).toBe('R paid K 300');
+  });
+
+  it('says all square when nobody owed anything', () => {
+    expect(describeSettlement(0)).toBe('All square');
   });
 });

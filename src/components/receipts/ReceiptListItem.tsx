@@ -12,14 +12,15 @@ export type ReceiptListItemProps = {
   onPress: () => void;
 };
 
-/** A history row: thumbnail, date, item count and total. */
+/** A history row: thumbnail, date, item count, who paid and the total. */
 export function ReceiptListItem({ receipt, onPress }: ReceiptListItemProps) {
   const itemCountLabel = `${receipt.item_count} ${receipt.item_count === 1 ? 'item' : 'items'}`;
+  const payerLabel = receipt.paid_by ? `paid by ${receipt.paid_by}` : 'no payer yet';
 
   return (
     <List.Item
       title={formatDate(receipt.created_at)}
-      description={itemCountLabel}
+      description={`${itemCountLabel} · ${payerLabel}`}
       onPress={onPress}
       accessibilityRole="button"
       style={styles.card}

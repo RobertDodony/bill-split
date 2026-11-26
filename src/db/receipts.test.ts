@@ -9,6 +9,7 @@ import {
   getItems,
   getLastPaidBy,
   getReceipt,
+  listAllItems,
   listReceipts,
   setPaidBy,
   updateItem,
@@ -192,6 +193,25 @@ describe('receipts db', () => {
         'second-a',
         'second-b',
         'third',
+      ]);
+    });
+  });
+
+  describe('listAllItems', () => {
+    it('lists the items of every receipt, by receipt and in order', async () => {
+      const a = await createReceipt(db, {
+        imageUri: null,
+        items: [
+          { name: 'A1', price: 1 },
+          { name: 'A2', price: 2 },
+        ],
+      });
+      const b = await createReceipt(db, { imageUri: null, items: [{ name: 'B1', price: 3 }] });
+
+      expect((await listAllItems(db)).map((i) => [i.receipt_id, i.name])).toEqual([
+        [a, 'A1'],
+        [a, 'A2'],
+        [b, 'B1'],
       ]);
     });
   });
