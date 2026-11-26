@@ -41,6 +41,11 @@ export function formatPriceInput(value: number): string {
   return value ? String(value).replace('.', ',') : '';
 }
 
+/** Rounds an amount to two decimals, so sums like 0.1 + 0.2 come out as 0.3. */
+export function roundMoney(value: number): number {
+  return Math.round(value * 100) / 100;
+}
+
 export function sumPrices(items: readonly { price: number }[]): number {
   return items.reduce((sum, item) => sum + item.price, 0);
 }

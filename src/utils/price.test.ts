@@ -3,6 +3,7 @@ import {
   formatPriceInput,
   parsePrice,
   parsePriceInput,
+  roundMoney,
   sumPrices,
   totalsDiffer,
 } from '@/utils/price';
@@ -63,6 +64,17 @@ describe('formatPriceInput', () => {
 
   it('shows zero as an empty field', () => {
     expect(formatPriceInput(0)).toBe('');
+  });
+});
+
+describe('roundMoney', () => {
+  it.each([
+    [0.1 + 0.2, 0.3],
+    [333.335, 333.34],
+    [1299, 1299],
+    [-12.344, -12.34],
+  ])('rounds %d to %d', (value, expected) => {
+    expect(roundMoney(value)).toBe(expected);
   });
 });
 

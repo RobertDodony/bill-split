@@ -1,4 +1,5 @@
 import type { ReceiptItem } from '@/types/receipt';
+import { roundMoney } from '@/utils/price';
 
 /**
  * Splits are stored as R's share of an item's price, in percent (0–100). K pays the rest.
@@ -34,8 +35,6 @@ export function formatShare(share: number): string {
   }
   return `${Math.round(share)}%`;
 }
-
-const roundMoney = (value: number) => Math.round(value * 100) / 100;
 
 /** What R and K each pay for a price, rounded to two decimals. Together they add up to the price. */
 export function splitPrice(price: number, share: number): { r: number; k: number } {
