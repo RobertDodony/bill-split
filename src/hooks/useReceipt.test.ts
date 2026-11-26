@@ -93,6 +93,28 @@ describe('useReceipt', () => {
     expect(result.current.items).toEqual([bread, milk, added]);
   });
 
+  it('has no payer until one is set', async () => {
+    const { result } = await renderLoaded();
+
+    expect(result.current.paidBy).toBeNull();
+  });
+
+  it('loads who paid the receipt', async () => {
+    db.getReceipt.mockResolvedValue({ ...receipt, paid_by: 'K' });
+    const { result } = await renderLoaded();
+
+    expect(result.current.paidBy).toBe('K');
+  });
+
+  it('changes who paid and saves it', async () => {
+    const { result } = await renderLoaded();
+
+    await act(() => result.current.setPaidBy('R'));
+
+    expect(db.setPaidBy).toHaveBeenCalledWith(mockDb, 7, 'R');
+    expect(result.current.paidBy).toBe('R');
+  });
+
   it('deletes the receipt and its photo', async () => {
     const { result } = await renderLoaded();
 

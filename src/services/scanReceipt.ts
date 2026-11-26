@@ -1,13 +1,16 @@
 import type { SQLiteDatabase } from 'expo-sqlite';
 
-import { createReceipt } from '@/db/receipts';
+import { createReceipt, getLastPaidBy } from '@/db/receipts';
 import { recognizeText } from '@/services/ocr';
 import { persistReceiptImage } from '@/services/receiptImages';
 import { parseReceipt } from '@/utils/parseReceipt';
 
 export type ScanResult = { receiptId: number; itemCount: number };
 
-/** The full scan pipeline: keep the photo, read its text, parse items and save the receipt. */
+/**
+ * The full scan pipeline: keep the photo, read its text, parse items and save the receipt. The
+ * receipt starts out paid by whoever paid the last one.
+ */
 export async function scanReceipt(db: SQLiteDatabase, tempUri: string): Promise<ScanResult> {
   const imageUri = await persistReceiptImage(tempUri);
   const lines = await recognizeText(imageUri);
@@ -17,6 +20,7 @@ export async function scanReceipt(db: SQLiteDatabase, tempUri: string): Promise<
     console.log(`[scanReceipt] OCR lines:\n${JSON.stringify(lines)}`);
   }
   const { items, detectedTotal } = parseReceipt(lines);
-  const receiptId = await createReceipt(db, { imageUri, detectedTotal, items });
+  const paidBy = await getLastPaidBy(db);
+  const receiptId = await createReceipt(db, { imageUri, detectedTotal, paidBy, items });
   return { receiptId, itemCount: items.length };
 }

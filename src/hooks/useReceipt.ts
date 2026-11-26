@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import * as receiptsDb from '@/db/receipts';
 import * as splitsDb from '@/db/splits';
 import { deleteReceiptImage } from '@/services/receiptImages';
-import type { ItemFields, Receipt, ReceiptItem } from '@/types/receipt';
+import type { ItemFields, Person, Receipt, ReceiptItem } from '@/types/receipt';
 import { sumPrices } from '@/utils/price';
 import { DEFAULT_SHARE, pickActiveItem, splitKey, summarizeSplit } from '@/utils/split';
 
@@ -52,6 +52,11 @@ export function useReceipt(receiptId: number) {
     await splitsDb.saveItemSplit(db, itemId, item.name, share);
   };
 
+  const setPaidBy = async (person: Person) => {
+    setReceipt((prev) => prev && { ...prev, paid_by: person });
+    await receiptsDb.setPaidBy(db, receiptId, person);
+  };
+
   const updateItem = async (itemId: number, fields: ItemFields) => {
     setItems((prev) => prev.map((i) => (i.id === itemId ? { ...i, ...fields } : i)));
     await receiptsDb.updateItem(db, itemId, fields);
@@ -81,7 +86,9 @@ export function useReceipt(receiptId: number) {
     activeItemId,
     initialShare,
     acceptSplit,
-    /** Opens an item's split for editing. */
+    paidBy: receipt?.paid_by ?? null,
+    setPaidBy,
+
     selectItem: setSelectedItemId,
     updateItem,
     deleteItem,

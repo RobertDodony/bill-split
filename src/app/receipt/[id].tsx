@@ -6,6 +6,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { ItemRow } from '@/components/receipts/ItemRow';
 import { ItemSplit } from '@/components/receipts/ItemSplit';
+import { PaidByToggle } from '@/components/receipts/PaidByToggle';
 import { ReceiptTotals } from '@/components/receipts/ReceiptTotals';
 import { SplitTotals } from '@/components/receipts/SplitTotals';
 import { SCREEN_STYLES } from '@/constants/layout';
@@ -23,6 +24,8 @@ export default function ReceiptScreen() {
     activeItemId,
     initialShare,
     acceptSplit,
+    paidBy,
+    setPaidBy,
     selectItem,
     updateItem,
     deleteItem,
@@ -64,14 +67,17 @@ export default function ReceiptScreen() {
           contentContainerStyle={styles.list}
           keyboardShouldPersistTaps="handled"
           ListHeaderComponent={
-            receipt?.image_uri ? (
-              <Image
-                testID="receipt-image"
-                source={{ uri: receipt.image_uri }}
-                style={styles.image}
-                contentFit="cover"
-              />
-            ) : undefined
+            <View style={styles.header}>
+              {receipt?.image_uri ? (
+                <Image
+                  testID="receipt-image"
+                  source={{ uri: receipt.image_uri }}
+                  style={styles.image}
+                  contentFit="cover"
+                />
+              ) : null}
+              <PaidByToggle value={paidBy} onChange={setPaidBy} />
+            </View>
           }
           ListEmptyComponent={
             <Text variant="bodyLarge" style={styles.muted}>
@@ -123,7 +129,8 @@ export default function ReceiptScreen() {
 
 const styles = StyleSheet.create({
   list: { gap: 8, padding: 16 },
-  image: { marginBottom: 8, height: 160, width: '100%', borderRadius: 16 },
+  header: { marginBottom: 8, gap: 16 },
+  image: { height: 160, width: '100%', borderRadius: 16 },
   muted: { color: COLORS.onSurfaceVariant },
   footer: { marginTop: 8, gap: 16 },
 });
