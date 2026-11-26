@@ -7,8 +7,10 @@ import {
   deleteItem,
   deleteReceipt,
   getItems,
+  getLastPaidBy,
   getReceipt,
   listReceipts,
+  setPaidBy,
   updateItem,
 } from '@/db/receipts';
 import { createTestDatabase } from '@/test-utils/testDatabase';
@@ -114,6 +116,40 @@ describe('receipts db', () => {
 
     it('is empty without receipts', async () => {
       expect(await listReceipts(db)).toEqual([]);
+    });
+  });
+
+  describe('paid by', () => {
+    it('saves the payer a receipt is created with', async () => {
+      const id = await createReceipt(db, { imageUri: null, paidBy: 'K', items: [] });
+
+      expect(await getReceipt(db, id)).toMatchObject({ paid_by: 'K' });
+    });
+
+    it('changes the payer of one receipt', async () => {
+      const id = await createReceipt(db, { imageUri: null, items: [] });
+      const other = await createReceipt(db, { imageUri: null, items: [] });
+
+      await setPaidBy(db, id, 'R');
+
+      expect(await getReceipt(db, id)).toMatchObject({ paid_by: 'R' });
+      expect(await getReceipt(db, other)).toMatchObject({ paid_by: null });
+    });
+
+    it('remembers who paid the most recent receipt with a payer', async () => {
+      await createReceipt(db, { imageUri: null, paidBy: 'R', items: [] });
+      now.mockReturnValue(2_000);
+      await createReceipt(db, { imageUri: null, paidBy: 'K', items: [] });
+      now.mockReturnValue(3_000);
+      await createReceipt(db, { imageUri: null, items: [] });
+
+      expect(await getLastPaidBy(db)).toBe('K');
+    });
+
+    it('has no last payer when no receipt has one', async () => {
+      await createReceipt(db, { imageUri: null, items: [] });
+
+      expect(await getLastPaidBy(db)).toBeNull();
     });
   });
 

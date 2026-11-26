@@ -34,6 +34,9 @@ export type ReceiptItem = {
   r_share: number | null;
 };
 
+/** A receipt together with its items, in item order. */
+export type ReceiptWithItems = Receipt & { items: ReceiptItem[] };
+
 /** The user-editable fields of an item. */
 export type ItemFields = Pick<ReceiptItem, 'name' | 'price'>;
 
