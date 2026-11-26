@@ -1,5 +1,5 @@
 import * as ImagePicker from 'expo-image-picker';
-import { router } from 'expo-router';
+import { router, type Href } from 'expo-router';
 import { useSQLiteContext } from 'expo-sqlite';
 import { useState } from 'react';
 import { Alert } from 'react-native';
@@ -11,8 +11,16 @@ const pickerOptions: ImagePicker.ImagePickerOptions = {
   quality: 1,
 };
 
+export type ReceiptScannerOptions = {
+  /**
+   * Open the new receipt in place of the current screen instead of on top of it. Used when
+   * scanning from a receipt, so a run of receipts doesn't pile up behind the Back button.
+   */
+  replace?: boolean;
+};
+
 /** Photo capture/pick for receipts. Scans the photo and opens the new receipt when it's done. */
-export function useReceiptScanner() {
+export function useReceiptScanner({ replace = false }: ReceiptScannerOptions = {}) {
   const db = useSQLiteContext();
   const [busy, setBusy] = useState(false);
 
@@ -26,7 +34,12 @@ export function useReceiptScanner() {
           'Could not read any items from this photo. You can add them by hand.'
         );
       }
-      router.push({ pathname: '/receipt/[id]', params: { id: String(receiptId) } });
+      const href: Href = { pathname: '/receipt/[id]', params: { id: String(receiptId) } };
+      if (replace) {
+        router.replace(href);
+      } else {
+        router.push(href);
+      }
     } catch (e) {
       Alert.alert('Something went wrong', e instanceof Error ? e.message : String(e));
     } finally {
