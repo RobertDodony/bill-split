@@ -8,7 +8,7 @@ import {
   totalsDiffer,
 } from '@/utils/price';
 
-/** `toLocaleString('hu-HU')` groups with a (narrow) no-break space; compare with plain spaces. */
+/** `formatPrice` groups thousands with a no-break space; compare with plain spaces. */
 const plainSpaces = (s: string) => s.replace(/\s/g, ' ');
 
 describe('parsePrice', () => {
@@ -48,6 +48,15 @@ describe('formatPrice', () => {
   it('formats with Hungarian separators', () => {
     expect(plainSpaces(formatPrice(12999.5))).toBe('12 999,5');
     expect(plainSpaces(formatPrice(1234567))).toBe('1 234 567');
+  });
+
+  it('groups four-digit amounts too', () => {
+    expect(plainSpaces(formatPrice(4550))).toBe('4 550');
+    expect(plainSpaces(formatPrice(-1299.25))).toBe('-1 299,25');
+  });
+
+  it('never groups the decimals', () => {
+    expect(formatPrice(0.25)).toBe('0,25');
   });
 
   it('rounds to at most two decimals', () => {

@@ -1,17 +1,28 @@
-import { StyleSheet, View } from 'react-native';
+import { Alert, StyleSheet, View } from 'react-native';
 import { ActivityIndicator, Button, Text } from 'react-native-paper';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import { BalanceCard } from '@/components/receipts/BalanceCard';
 import { SCREEN_STYLES, TAB_BAR_PADDING } from '@/constants/layout';
 import { COLORS } from '@/constants/theme';
-import { useReceiptScanner } from '@/hooks/useReceiptScanner';
+import { useOpenBalance } from '@/hooks/useOpenBalance';
+import { describeNet } from '@/utils/balance';
 
 export default function ScanScreen() {
-  const { busy, takePhoto, pickPhoto } = useReceiptScanner();
+  const { busy, takePhoto, pickPhoto, balance, openSince, settle } = useOpenBalance();
+
+  const confirmSettle = () => {
+    Alert.alert('Settle up?', `${describeNet(balance.net)}. This closes every open receipt.`, [
+      { text: 'Cancel', style: 'cancel' },
+      { text: 'Settle up', onPress: () => void settle() },
+    ]);
+  };
 
   return (
     <View style={SCREEN_STYLES.screen}>
       <SafeAreaView testID="scan-content" style={[SCREEN_STYLES.content, styles.content]}>
+        <BalanceCard balance={balance} openSince={openSince} onSettle={confirmSettle} />
+
         <View style={styles.intro}>
           <Text variant="headlineLarge" style={styles.center}>
             Scan a receipt
@@ -46,7 +57,8 @@ export default function ScanScreen() {
 
 const styles = StyleSheet.create({
   content: { gap: 24, paddingHorizontal: 24, paddingBottom: TAB_BAR_PADDING },
-  intro: { flex: 1, justifyContent: 'center', gap: 16 },
+  // 24 from the content gap plus 8 leaves 32 between the balance card and the intro.
+  intro: { marginTop: 16, gap: 16 },
   center: { textAlign: 'center' },
   muted: { color: COLORS.onSurfaceVariant },
   busy: { alignItems: 'center', gap: 16, paddingVertical: 24 },

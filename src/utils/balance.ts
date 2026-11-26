@@ -1,6 +1,9 @@
 import type { Person, ReceiptItem } from '@/types/receipt';
-import { roundMoney } from '@/utils/price';
+import { formatPrice, roundMoney } from '@/utils/price';
 import { summarizeSplit } from '@/utils/split';
+
+/** A net amount smaller than this (half a fillér) counts as nobody owing anything. */
+const SQUARE_TOLERANCE = 0.005;
 
 /** A receipt as the balance sees it: who paid for it, and its items with their splits. */
 export type BalanceReceipt = {
@@ -59,4 +62,17 @@ export function summarizeBalance(receipts: readonly BalanceReceipt[]): BalanceSu
     k: roundMoney(k),
     net: roundMoney(net),
   };
+}
+
+/** True when there's something open and every open receipt is complete. */
+export function canSettle(summary: BalanceSummary): boolean {
+  return summary.receiptCount > 0 && summary.completeCount === summary.receiptCount;
+}
+
+/** Who owes whom, in words: `K owes R 4 550`, `R owes K 300` or `All square`. */
+export function describeNet(net: number): string {
+  if (Math.abs(net) < SQUARE_TOLERANCE) {
+    return 'All square';
+  }
+  return net > 0 ? `K owes R ${formatPrice(net)}` : `R owes K ${formatPrice(-net)}`;
 }

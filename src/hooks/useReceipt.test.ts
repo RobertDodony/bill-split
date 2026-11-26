@@ -231,7 +231,7 @@ describe('useReceipt', () => {
       await act(() => result.current.acceptSplit(1, 100 / 3));
 
       expect(splits.saveItemSplit).toHaveBeenCalledWith(mockDb, 1, 'KENYÉR', 100 / 3);
-      expect(result.current.items[0].r_share).toBe(100 / 3);
+      expect(result.current.items[0]?.r_share).toBe(100 / 3);
       expect(result.current.activeItemId).toBe(2);
       expect(result.current.initialShare(makeItem({ name: 'Kenyér' }))).toBe(100 / 3);
     });
@@ -254,7 +254,7 @@ describe('useReceipt', () => {
       expect(result.current.activeItemId).toBe(1);
 
       await act(() => result.current.acceptSplit(1, 70));
-      expect(result.current.items[0].r_share).toBe(70);
+      expect(result.current.items[0]?.r_share).toBe(70);
       expect(result.current.activeItemId).toBe(2);
     });
 

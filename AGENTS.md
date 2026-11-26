@@ -59,6 +59,9 @@ Don't add ESLint or Prettier. Disable an oxlint rule only with an
 - Prefer early returns over nested `if`/`else`, still with braces.
 - TypeScript is strict. Use `type` aliases, not `interface`. Import types with `import type` (or
   inline `type` specifiers). Avoid `as` casts and `any`; narrow instead.
+- `noUncheckedIndexedAccess` is on, so `items[0]` is `ReceiptItem | undefined`. Handle the
+  missing case (`items.at(0)?.name ?? ''`) instead of asserting it away; in tests, `!` is fine
+  where a missing element would fail the test anyway.
 - Use named exports. Default exports are only for route files in `src/app/` and config files.
 - Import project code through the `@/` alias (`@/utils/price`), not relative `../` paths. Import
   order is handled by `yarn fmt`.

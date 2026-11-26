@@ -11,6 +11,11 @@ const pickerOptions: ImagePicker.ImagePickerOptions = {
   quality: 1,
 };
 
+/** The photo that was taken or picked, or `null` if the picker was closed without one. */
+function photoUri(result: ImagePicker.ImagePickerResult): string | null {
+  return result.canceled ? null : (result.assets[0]?.uri ?? null);
+}
+
 export type ReceiptScannerOptions = {
   /**
    * Open the new receipt in place of the current screen instead of on top of it. Used when
@@ -53,16 +58,16 @@ export function useReceiptScanner({ replace = false }: ReceiptScannerOptions = {
       Alert.alert('Camera permission needed', 'Allow camera access in Settings to scan receipts.');
       return;
     }
-    const result = await ImagePicker.launchCameraAsync(pickerOptions);
-    if (!result.canceled) {
-      await process(result.assets[0].uri);
+    const uri = photoUri(await ImagePicker.launchCameraAsync(pickerOptions));
+    if (uri) {
+      await process(uri);
     }
   };
 
   const pickPhoto = async () => {
-    const result = await ImagePicker.launchImageLibraryAsync(pickerOptions);
-    if (!result.canceled) {
-      await process(result.assets[0].uri);
+    const uri = photoUri(await ImagePicker.launchImageLibraryAsync(pickerOptions));
+    if (uri) {
+      await process(uri);
     }
   };
 

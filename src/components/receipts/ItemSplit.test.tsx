@@ -33,7 +33,7 @@ describe('ItemSplit', () => {
 
     it('updates the amounts as the slider moves', async () => {
       await renderSplit({ active: true });
-      await fireEvent(queryAllSliders(screen.container)[0], 'valueChange', 55.2);
+      await fireEvent(queryAllSliders(screen.container)[0]!, 'valueChange', 55.2);
 
       expect(screen.getByText('R 55% · 330')).toBeOnTheScreen();
       expect(screen.getByText('K 45% · 270')).toBeOnTheScreen();
