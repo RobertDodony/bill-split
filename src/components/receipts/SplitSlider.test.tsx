@@ -5,7 +5,8 @@ import { SplitSlider } from '@/components/receipts/SplitSlider';
 import { COLORS } from '@/constants/theme';
 import { queryAllSliders } from '@/test-utils/queries';
 
-const slider = () => queryAllSliders(screen.container)[0];
+// Each test renders exactly one slider; a missing one fails the test where it's used.
+const slider = () => queryAllSliders(screen.container)[0]!;
 
 /** A slider that keeps its own value, like the item split does. */
 function Controlled({ initial, onChange }: { initial: number; onChange: (v: number) => void }) {

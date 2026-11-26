@@ -167,10 +167,12 @@ function cleanName(text: string) {
 
 function splitRow(row: string): { name: string; price?: number } {
   const match = row.match(PRICE_AT_END);
-  if (!match || match.index === undefined) {
+  // The amount group always matches when the row does; checking it narrows its type.
+  const amount = match?.[1];
+  if (!match || match.index === undefined || amount === undefined) {
     return { name: row };
   }
-  const [, amount, gluedLetter] = match;
+  const gluedLetter = match[2];
   // `0,5l` is part of a name; only discounts carry a letter, e.g. `-552e`.
   if (gluedLetter && !amount.startsWith('-')) {
     return { name: row };

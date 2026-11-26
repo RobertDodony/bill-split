@@ -5,7 +5,11 @@ const DEFAULT_EXTENSION = 'jpg';
 
 /** The file extension of a URI's last path segment, e.g. `png` for `file:///a.b/photo.png?x=1`. */
 export function fileExtension(uri: string): string {
-  const fileName = uri.split(/[?#]/)[0].split('/').pop() ?? '';
+  const fileName =
+    uri
+      .replace(/[?#].*/, '')
+      .split('/')
+      .pop() ?? '';
   const dot = fileName.lastIndexOf('.');
   return dot > 0 && dot < fileName.length - 1 ? fileName.slice(dot + 1) : DEFAULT_EXTENSION;
 }

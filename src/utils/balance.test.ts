@@ -1,8 +1,11 @@
 import { makeItem } from '@/test-utils/fixtures';
 import type { Person, ReceiptItem } from '@/types/receipt';
-import { isReceiptComplete, summarizeBalance } from '@/utils/balance';
+import { canSettle, describeNet, isReceiptComplete, summarizeBalance } from '@/utils/balance';
 
 const receipt = (paidBy: Person | null, items: ReceiptItem[]) => ({ paid_by: paidBy, items });
+
+/** `formatPrice` groups thousands with a no-break space; compare with plain spaces. */
+const plainSpaces = (s: string) => s.replace(/\s/g, ' ');
 
 describe('summarizeBalance', () => {
   it('is all zeros without receipts', () => {
@@ -86,5 +89,36 @@ describe('isReceiptComplete', () => {
 
   it('is true for a receipt with no items once it has a payer', () => {
     expect(isReceiptComplete(receipt('K', []))).toBe(true);
+  });
+});
+
+describe('canSettle', () => {
+  const summary = { receiptCount: 3, completeCount: 3, r: 0, k: 0, net: 0 };
+
+  it('is true when every open receipt is complete', () => {
+    expect(canSettle(summary)).toBe(true);
+  });
+
+  it('is false while a receipt is unfinished', () => {
+    expect(canSettle({ ...summary, completeCount: 2 })).toBe(false);
+  });
+
+  it('is false with nothing open', () => {
+    expect(canSettle({ ...summary, receiptCount: 0, completeCount: 0 })).toBe(false);
+  });
+});
+
+describe('describeNet', () => {
+  it('says K owes R when the net is positive', () => {
+    expect(plainSpaces(describeNet(4550))).toBe('K owes R 4 550');
+  });
+
+  it('says R owes K when the net is negative', () => {
+    expect(describeNet(-300.5)).toBe('R owes K 300,5');
+  });
+
+  it('says all square at zero, including floating-point leftovers', () => {
+    expect(describeNet(0)).toBe('All square');
+    expect(describeNet(-0.001)).toBe('All square');
   });
 });

@@ -149,7 +149,7 @@ describe('ReceiptScreen', () => {
     const receipt = mockReceipt();
     await openReceipt();
 
-    await fireEvent.press(screen.getAllByRole('button', { name: 'Delete item' })[0]);
+    await fireEvent.press(screen.getAllByRole('button', { name: 'Delete item' })[0]!);
 
     expect(receipt.deleteItem).toHaveBeenCalledWith(1);
   });

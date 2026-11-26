@@ -40,8 +40,8 @@ describe('settlements db', () => {
 
       expect(open.map((r) => r.id)).toEqual([first, second]);
       expect(open[0]).toMatchObject({ paid_by: 'R', settlement_id: null });
-      expect(open[0].items.map((i) => i.name)).toEqual(['KENYÉR', 'TEJ']);
-      expect(open[1].items.map((i) => i.name)).toEqual(['SAJT']);
+      expect(open[0]?.items.map((i) => i.name)).toEqual(['KENYÉR', 'TEJ']);
+      expect(open[1]?.items.map((i) => i.name)).toEqual(['SAJT']);
     });
 
     it('includes receipts without items', async () => {

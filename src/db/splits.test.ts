@@ -50,7 +50,7 @@ describe('splits db', () => {
   it('remembers nothing for an item without a name', async () => {
     await saveItemSplit(db, 1, '  ', 20);
 
-    expect((await getItems(db, receiptId))[0].r_share).toBe(20);
+    expect((await getItems(db, receiptId))[0]?.r_share).toBe(20);
     expect(await getSplitMemory(db)).toEqual(new Map());
   });
 
