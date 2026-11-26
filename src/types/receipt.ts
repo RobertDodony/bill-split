@@ -16,6 +16,8 @@ export type ReceiptItem = {
   name: string;
   price: number;
   position: number;
+  /** R's share of the price in percent (0–100); K pays the rest. `null` until it's been split. */
+  r_share: number | null;
 };
 
 /** The user-editable fields of an item. */

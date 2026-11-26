@@ -36,7 +36,8 @@
           "photosPermission": "Allow $(PRODUCT_NAME) to read receipt photos from your library.",
           "microphonePermission": false
         }
-      ]
+      ],
+      "expo-font"
     ],
     "experiments": {
       "typedRoutes": true,

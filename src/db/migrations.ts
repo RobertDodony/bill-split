@@ -3,7 +3,7 @@ import type { SQLiteDatabase } from 'expo-sqlite';
 export const DATABASE_NAME = 'receipts.db';
 
 /** Bump this and add a migration step below whenever the schema changes. */
-export const DATABASE_VERSION = 1;
+export const DATABASE_VERSION = 2;
 
 /** Brings the database schema up to `DATABASE_VERSION`. Safe to run on every app start. */
 export async function migrate(db: SQLiteDatabase) {
@@ -31,6 +31,16 @@ export async function migrate(db: SQLiteDatabase) {
         position INTEGER NOT NULL
       );
       CREATE INDEX IF NOT EXISTS items_receipt ON items(receipt_id);
+    `);
+  }
+  if (version < 2) {
+    // How each item is split between R and K, and the last split used for each item name.
+    await db.execAsync(`
+      ALTER TABLE items ADD COLUMN r_share REAL;
+      CREATE TABLE IF NOT EXISTS split_memory (
+        name_key TEXT PRIMARY KEY,
+        r_share REAL NOT NULL
+      );
     `);
   }
   await db.execAsync(`PRAGMA user_version = ${DATABASE_VERSION}`);

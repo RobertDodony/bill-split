@@ -1,8 +1,8 @@
-import { useState } from 'react';
-import { Pressable, TextInput, View } from 'react-native';
-import colors from 'tailwindcss/colors';
+import { useState, type ReactNode } from 'react';
+import { StyleSheet, TextInput, View } from 'react-native';
+import { IconButton } from 'react-native-paper';
 
-import { ThemedText } from '@/components/ui/ThemedText';
+import { COLORS } from '@/constants/theme';
 import type { ItemFields } from '@/types/receipt';
 import { formatPriceInput, parsePriceInput } from '@/utils/price';
 
@@ -10,10 +10,14 @@ export type ItemRowProps = ItemFields & {
   /** Called when editing ends and the name or price actually changed. */
   onChange: (fields: ItemFields) => void;
   onDelete: () => void;
+  /** Highlights the row, e.g. while its split is being edited. */
+  active?: boolean;
+  /** Shown under the name and price, e.g. the item's split. */
+  children?: ReactNode;
 };
 
-/** An editable receipt line: name, price and a delete button. */
-export function ItemRow({ name, price, onChange, onDelete }: ItemRowProps) {
+/** An editable receipt line: name, price and a delete button, with optional content below. */
+export function ItemRow({ name, price, onChange, onDelete, active, children }: ItemRowProps) {
   const [nameText, setNameText] = useState(name);
   const [priceText, setPriceText] = useState(formatPriceInput(price));
 
@@ -26,36 +30,56 @@ export function ItemRow({ name, price, onChange, onDelete }: ItemRowProps) {
   };
 
   return (
-    <View className="flex-row items-center gap-2 rounded-2xl bg-zinc-900 px-4 py-2">
-      <TextInput
-        className="flex-1 py-2 text-[16px] text-white"
-        value={nameText}
-        onChangeText={setNameText}
-        onEndEditing={commit}
-        placeholder="Item"
-        placeholderTextColor={colors.zinc[400]}
-        accessibilityLabel="Item name"
-      />
-      <TextInput
-        className="w-[90px] py-2 text-right text-[16px] tabular-nums text-white"
-        value={priceText}
-        onChangeText={setPriceText}
-        onEndEditing={commit}
-        placeholder="0"
-        placeholderTextColor={colors.zinc[400]}
-        keyboardType="decimal-pad"
-        selectTextOnFocus
-        accessibilityLabel="Item price"
-      />
-      <Pressable
-        onPress={onDelete}
-        hitSlop={8}
-        accessibilityRole="button"
-        accessibilityLabel="Delete item"
-        className="px-1 active:opacity-50"
-      >
-        <ThemedText themeColor="mutedForeground">✕</ThemedText>
-      </Pressable>
+    <View testID="item-row" style={[styles.card, active && styles.active]}>
+      <View style={styles.fields}>
+        <TextInput
+          style={[styles.input, styles.name]}
+          value={nameText}
+          onChangeText={setNameText}
+          onEndEditing={commit}
+          placeholder="Item"
+          placeholderTextColor={COLORS.onSurfaceVariant}
+          accessibilityLabel="Item name"
+        />
+        <TextInput
+          style={[styles.input, styles.price]}
+          value={priceText}
+          onChangeText={setPriceText}
+          onEndEditing={commit}
+          placeholder="0"
+          placeholderTextColor={COLORS.onSurfaceVariant}
+          keyboardType="decimal-pad"
+          selectTextOnFocus
+          accessibilityLabel="Item price"
+        />
+        <IconButton
+          icon="close"
+          size={20}
+          onPress={onDelete}
+          accessibilityLabel="Delete item"
+          style={styles.delete}
+        />
+      </View>
+      {children}
     </View>
   );
 }
+
+const styles = StyleSheet.create({
+  card: {
+    gap: 8,
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: 'transparent',
+    backgroundColor: COLORS.surface,
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+  },
+  active: { borderColor: COLORS.personRStrong },
+  fields: { flexDirection: 'row', alignItems: 'center', gap: 8 },
+  input: { paddingVertical: 8, fontSize: 16, color: COLORS.onSurface },
+  name: { flex: 1 },
+  price: { width: 90, textAlign: 'right', fontVariant: ['tabular-nums'] },
+  // IconButton has a 6dp margin for standalone use; the row's gap spaces it here.
+  delete: { margin: 0 },
+});

@@ -11,3 +11,8 @@ export function queryAllByProps(container: TestInstance, props: Record<string, u
     Object.entries(props).every(([key, value]) => node.props[key] === value)
   );
 }
+
+/** The native sliders (`@react-native-community/slider`, stood in for by `jest/mocks.js`). */
+export function queryAllSliders(container: TestInstance) {
+  return container.queryAll((node) => node.type === 'Slider');
+}

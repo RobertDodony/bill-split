@@ -1,7 +1,7 @@
 import { render, screen } from '@testing-library/react-native';
-import colors from 'tailwindcss/colors';
 
 import { ReceiptTotals } from '@/components/receipts/ReceiptTotals';
+import { COLORS } from '@/constants/theme';
 
 const WARNING = /totals differ/;
 
@@ -25,15 +25,15 @@ describe('ReceiptTotals', () => {
 
     expect(screen.getByText('Total printed on receipt')).toBeOnTheScreen();
     const [, printed] = screen.getAllByText('928');
-    expect(printed).toHaveStyle({ color: colors.zinc[400] });
+    expect(printed).toHaveStyle({ color: COLORS.onSurfaceVariant });
     expect(screen.queryByText(WARNING)).not.toBeOnTheScreen();
   });
 
   it('warns when the printed total differs', async () => {
     await render(<ReceiptTotals itemCount={2} total={900} detectedTotal={928} />);
 
-    expect(screen.getByText('928')).toHaveStyle({ color: colors.red[500] });
-    expect(screen.getByText(WARNING)).toHaveStyle({ color: colors.red[500] });
+    expect(screen.getByText('928')).toHaveStyle({ color: COLORS.error });
+    expect(screen.getByText(WARNING)).toHaveStyle({ color: COLORS.error });
   });
 
   it('shows a printed total of 0', async () => {

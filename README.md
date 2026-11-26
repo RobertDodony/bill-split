@@ -1,8 +1,10 @@
 # Számla elosztó
 
 An Expo (React Native) app for scanning receipts. Take a photo of a receipt and the app reads its
-line items and prices on-device (ML Kit), then lets you correct them and keeps a history of
-scanned receipts in a local SQLite database.
+line items and prices on-device (ML Kit), then lets you correct them and split them between R
+and K, one item at a time, with a slider. The app remembers each item's split for the next time
+an item with the same name shows up, and keeps a history of scanned receipts in a local SQLite
+database.
 
 Receipt scanning needs the native modules in a [development build](https://docs.expo.dev/develop/development-builds/introduction/);
 it does not work in Expo Go. The app targets Android only.
@@ -36,19 +38,17 @@ src/
   app/                 Routes only (Expo Router). Every file here is a screen or a layout.
   components/
     navigation/        App-level navigation (tab bar)
-    receipts/          Receipt-specific UI (item row, history row, totals)
-    ui/                Generic building blocks (Button, ThemedText, Image, SafeAreaView)
-  constants/           Shared class names (e.g. tab bar padding)
-  global.css           Tailwind entry point, imported once in src/app/_layout.tsx
+    receipts/          Receipt-specific UI (item row, split slider, history row, totals)
+  constants/           The Paper theme and colors, shared screen styles and sizes
   db/                  SQLite schema migrations and queries
   hooks/               React hooks: the data and logic behind each screen
   services/            Device integrations: OCR, image storage, the scan pipeline
   types/               Shared TypeScript types
-  utils/               Pure functions: price/date formatting, receipt text parsing
+  utils/               Pure functions: price/date formatting, receipt text parsing, splitting
   test-utils/          Test helpers (in-memory SQLite, fixtures, queries)
   __tests__/app/       Tests for routes (they can't live inside src/app)
 fixtures/receipts/     Real receipt photos with their expected parse results (see its README)
-jest/                  Jest setup: compiles the NativeWind styles for tests
+jest/                  Jest mocks for native modules that can't run under Jest
 ```
 
 Conventions (the full coding guidelines are in [AGENTS.md](AGENTS.md)):
@@ -60,15 +60,11 @@ Conventions (the full coding guidelines are in [AGENTS.md](AGENTS.md)):
 - Code is layered: screens → hooks → services/db → utils. Screens stay thin. Data loading and
   side effects live in hooks (`useReceipt`, `useReceiptList`, `useReceiptScanner`), so they can
   be tested on their own.
-- Styling uses [NativeWind](https://www.nativewind.dev/) v4 (Tailwind CSS 3) `className`s.
-  `1rem` is 16px, so the Tailwind spacing scale matches Tailwind's defaults (`p-4` = 16px).
-- The app is dark-only and uses Tailwind's default palette (`bg-zinc-900`, `text-red-500`, …),
-  so there are no `dark:` variants. Props that need a raw color value (`placeholderTextColor`,
-  the native tab bar) read it from `tailwindcss/colors`.
-- Third-party components need `cssInterop` before they accept `className`; use the wrappers in
-  `src/components/ui/` (`Image`, `SafeAreaView`) rather than importing them directly.
-- Set text colors with `ThemedText`'s `themeColor` prop, not in `className`: two color classes on
-  one element don't override each other predictably.
+- UI components come from [React Native Paper](https://callstack.github.io/react-native-paper/)
+  (Material 3), themed in `src/constants/theme.ts`. Layout uses plain React Native views styled
+  with `StyleSheet.create`.
+- The app is dark-only. Every color is defined once in `src/constants/theme.ts` and read from
+  `COLORS` (Material color roles plus `personR` / `personK` for the two people).
 
 ## Testing
 
@@ -81,8 +77,11 @@ Tests use [Jest](https://jestjs.io/) with the `jest-expo` preset and
 - Database code runs against a real in-memory SQLite database (`src/test-utils/testDatabase.ts`,
   built on Node's `node:sqlite`, so Node 22.5+ is required).
 - Route tests use `renderRouter` from `expo-router/testing-library`.
+- Paper components render under Jest as they are. The native slider
+  (`@react-native-community/slider`) doesn't: `jest/mocks.js` stands in a plain element that
+  carries its props. Find it with `queryAllSliders` from `src/test-utils/queries.ts` and fire
+  `valueChange` / `slidingComplete` (with the value) on it.
 - Testing Library v14 is async: `await` every `render`, `renderHook`, `fireEvent` and `act`.
-- `className`s resolve to real styles in tests: `jest/globalSetup.js` compiles `global.css` the
-  same way Metro does. Assert colors with `rgba(colors.red[500])` (`rgba` is in `src/test-utils/styles.ts`).
+- Assert colors against the theme: `toHaveStyle({ color: COLORS.error })`.
 - The receipt parser is also tested against the real receipts in `fixtures/receipts/`. To see
   what ML Kit reads from a photo, start the dev server with `EXPO_PUBLIC_LOG_OCR=1`.

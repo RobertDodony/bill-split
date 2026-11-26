@@ -1,43 +1,54 @@
-import { ActivityIndicator, View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
+import { ActivityIndicator, Button, Text } from 'react-native-paper';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
-import { Button } from '@/components/ui/Button';
-import { SafeAreaView } from '@/components/ui/SafeAreaView';
-import { ThemedText } from '@/components/ui/ThemedText';
-import { TAB_BAR_PADDING } from '@/constants/layout';
+import { SCREEN_STYLES, TAB_BAR_PADDING } from '@/constants/layout';
+import { COLORS } from '@/constants/theme';
 import { useReceiptScanner } from '@/hooks/useReceiptScanner';
-import { cn } from '@/utils/cn';
 
 export default function ScanScreen() {
   const { busy, takePhoto, pickPhoto } = useReceiptScanner();
 
   return (
-    <View className="flex-1 flex-row justify-center bg-black">
-      <SafeAreaView
-        testID="scan-content"
-        className={cn('max-w-content flex-1 gap-6 px-6', TAB_BAR_PADDING)}
-      >
-        <View className="flex-1 justify-center gap-4">
-          <ThemedText type="subtitle" className="text-center">
+    <View style={SCREEN_STYLES.screen}>
+      <SafeAreaView testID="scan-content" style={[SCREEN_STYLES.content, styles.content]}>
+        <View style={styles.intro}>
+          <Text variant="headlineLarge" style={styles.center}>
             Scan a receipt
-          </ThemedText>
-          <ThemedText themeColor="mutedForeground" className="text-center">
+          </Text>
+          <Text variant="bodyLarge" style={[styles.center, styles.muted]}>
             Take a photo of a receipt to get a list of its items and prices. For best results, lay
             it flat in good light and fill the frame.
-          </ThemedText>
+          </Text>
         </View>
 
         {busy ? (
-          <View className="items-center gap-4 py-6">
+          <View style={styles.busy}>
             <ActivityIndicator size="large" />
-            <ThemedText themeColor="mutedForeground">Reading receipt…</ThemedText>
+            <Text variant="bodyLarge" style={styles.muted}>
+              Reading receipt…
+            </Text>
           </View>
         ) : (
-          <View className="gap-4">
-            <Button title="Take photo" onPress={takePhoto} />
-            <Button title="Choose from gallery" variant="secondary" onPress={pickPhoto} />
+          <View style={styles.actions}>
+            <Button mode="contained" onPress={takePhoto}>
+              Take photo
+            </Button>
+            <Button mode="contained-tonal" onPress={pickPhoto}>
+              Choose from gallery
+            </Button>
           </View>
         )}
       </SafeAreaView>
     </View>
   );
 }
+
+const styles = StyleSheet.create({
+  content: { gap: 24, paddingHorizontal: 24, paddingBottom: TAB_BAR_PADDING },
+  intro: { flex: 1, justifyContent: 'center', gap: 16 },
+  center: { textAlign: 'center' },
+  muted: { color: COLORS.onSurfaceVariant },
+  busy: { alignItems: 'center', gap: 16, paddingVertical: 24 },
+  actions: { gap: 16 },
+});

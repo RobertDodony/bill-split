@@ -29,7 +29,7 @@ describe('migrate', () => {
   it('creates the schema on a fresh database', async () => {
     await migrate(db);
 
-    expect(await tableNames(db)).toEqual(['items', 'items_receipt', 'receipts']);
+    expect(await tableNames(db)).toEqual(['items', 'items_receipt', 'receipts', 'split_memory']);
     expect(await userVersion(db)).toBe(DATABASE_VERSION);
   });
 
@@ -49,6 +49,26 @@ describe('migrate', () => {
 
     expect(await userVersion(db)).toBe(DATABASE_VERSION);
     expect(await db.getAllAsync('SELECT id FROM receipts')).toEqual([{ id: 1 }]);
+  });
+
+  it('upgrades a version 1 database, keeping its items unsplit', async () => {
+    await db.execAsync(`
+      CREATE TABLE receipts (id INTEGER PRIMARY KEY AUTOINCREMENT, created_at INTEGER NOT NULL,
+        image_uri TEXT, detected_total REAL);
+      CREATE TABLE items (id INTEGER PRIMARY KEY AUTOINCREMENT, receipt_id INTEGER NOT NULL,
+        name TEXT NOT NULL, price REAL NOT NULL, position INTEGER NOT NULL);
+      INSERT INTO receipts (created_at) VALUES (1);
+      INSERT INTO items (receipt_id, name, price, position) VALUES (1, 'TEJ', 329, 0);
+      PRAGMA user_version = 1;
+    `);
+
+    await migrate(db);
+
+    expect(await userVersion(db)).toBe(2);
+    expect(await db.getAllAsync('SELECT name, r_share FROM items')).toEqual([
+      { name: 'TEJ', r_share: null },
+    ]);
+    expect(await db.getAllAsync('SELECT * FROM split_memory')).toEqual([]);
   });
 
   it('skips migration steps the database already has', async () => {

@@ -1,6 +1,7 @@
-import { View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
+import { Text } from 'react-native-paper';
 
-import { ThemedText } from '@/components/ui/ThemedText';
+import { COLORS } from '@/constants/theme';
 import { formatPrice, totalsDiffer } from '@/utils/price';
 
 export type ReceiptTotalsProps = {
@@ -17,25 +18,31 @@ export function ReceiptTotals({ itemCount, total, detectedTotal }: ReceiptTotals
 
   return (
     <>
-      <View className="flex-row justify-between">
-        <ThemedText type="smallBold">Total ({itemCount} items)</ThemedText>
-        <ThemedText type="smallBold">{formatPrice(total)}</ThemedText>
+      <View style={styles.row}>
+        <Text variant="titleSmall">Total ({itemCount} items)</Text>
+        <Text variant="titleSmall">{formatPrice(total)}</Text>
       </View>
       {detectedTotal != null && (
-        <View className="flex-row justify-between">
-          <ThemedText type="small" themeColor="mutedForeground">
+        <View style={styles.row}>
+          <Text variant="bodyMedium" style={styles.muted}>
             Total printed on receipt
-          </ThemedText>
-          <ThemedText type="small" themeColor={mismatch ? 'danger' : 'mutedForeground'}>
+          </Text>
+          <Text variant="bodyMedium" style={mismatch ? styles.danger : styles.muted}>
             {formatPrice(detectedTotal)}
-          </ThemedText>
+          </Text>
         </View>
       )}
       {mismatch && (
-        <ThemedText type="small" themeColor="danger">
+        <Text variant="bodyMedium" style={styles.danger}>
           The totals differ. Check the items for missing or misread prices.
-        </ThemedText>
+        </Text>
       )}
     </>
   );
 }
+
+const styles = StyleSheet.create({
+  row: { flexDirection: 'row', justifyContent: 'space-between' },
+  muted: { color: COLORS.onSurfaceVariant },
+  danger: { color: COLORS.error },
+});

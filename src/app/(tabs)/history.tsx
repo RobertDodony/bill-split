@@ -1,29 +1,31 @@
 import { router } from 'expo-router';
-import { FlatList, View } from 'react-native';
+import { FlatList, StyleSheet, View } from 'react-native';
+import { Text } from 'react-native-paper';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { ReceiptListItem } from '@/components/receipts/ReceiptListItem';
-import { SafeAreaView } from '@/components/ui/SafeAreaView';
-import { ThemedText } from '@/components/ui/ThemedText';
-import { TAB_BAR_PADDING } from '@/constants/layout';
+import { SCREEN_STYLES, TAB_BAR_PADDING } from '@/constants/layout';
+import { COLORS } from '@/constants/theme';
 import { useReceiptList } from '@/hooks/useReceiptList';
-import { cn } from '@/utils/cn';
 
 export default function HistoryScreen() {
   const receipts = useReceiptList();
 
   return (
-    <View className="flex-1 flex-row justify-center bg-black">
-      <SafeAreaView className="max-w-content flex-1" edges={['top', 'left', 'right']}>
-        <ThemedText type="subtitle" className="px-6 py-4">
+    <View style={SCREEN_STYLES.screen}>
+      <SafeAreaView style={SCREEN_STYLES.content} edges={['top', 'left', 'right']}>
+        <Text variant="headlineLarge" style={styles.title}>
           History
-        </ThemedText>
+        </Text>
         <FlatList
           testID="receipt-list"
           data={receipts}
           keyExtractor={(r) => String(r.id)}
-          contentContainerClassName={cn('gap-2 px-6', TAB_BAR_PADDING)}
+          contentContainerStyle={styles.list}
           ListEmptyComponent={
-            <ThemedText themeColor="mutedForeground">No receipts yet. Scan one first.</ThemedText>
+            <Text variant="bodyLarge" style={styles.muted}>
+              No receipts yet. Scan one first.
+            </Text>
           }
           renderItem={({ item }) => (
             <ReceiptListItem
@@ -38,3 +40,9 @@ export default function HistoryScreen() {
     </View>
   );
 }
+
+const styles = StyleSheet.create({
+  title: { paddingHorizontal: 24, paddingVertical: 16 },
+  list: { gap: 8, paddingHorizontal: 24, paddingBottom: TAB_BAR_PADDING },
+  muted: { color: COLORS.onSurfaceVariant },
+});

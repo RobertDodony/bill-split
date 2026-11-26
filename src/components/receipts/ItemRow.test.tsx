@@ -1,7 +1,8 @@
 import { fireEvent, render, screen } from '@testing-library/react-native';
-import colors from 'tailwindcss/colors';
+import { Text } from 'react-native';
 
 import { ItemRow } from '@/components/receipts/ItemRow';
+import { COLORS } from '@/constants/theme';
 
 const nameInput = () => screen.getByLabelText('Item name');
 const priceInput = () => screen.getByLabelText('Item price');
@@ -29,7 +30,7 @@ describe('ItemRow', () => {
     expect(priceInput()).toHaveDisplayValue('');
     expect(priceInput()).toHaveProp('placeholder', '0');
     expect(nameInput()).toHaveProp('placeholder', 'Item');
-    expect(nameInput()).toHaveProp('placeholderTextColor', colors.zinc[400]);
+    expect(nameInput()).toHaveProp('placeholderTextColor', COLORS.onSurfaceVariant);
   });
 
   it('saves a trimmed name when editing ends', async () => {
@@ -75,5 +76,23 @@ describe('ItemRow', () => {
     await fireEvent.press(screen.getByRole('button', { name: 'Delete item' }));
 
     expect(onDelete).toHaveBeenCalledTimes(1);
+  });
+
+  it('shows its children under the name and price', async () => {
+    await renderRow({ children: <Text>Split here</Text> });
+
+    expect(screen.getByText('Split here')).toBeOnTheScreen();
+  });
+
+  it('is outlined when active', async () => {
+    await renderRow({ active: true });
+
+    expect(screen.getByTestId('item-row')).toHaveStyle({ borderColor: COLORS.personRStrong });
+  });
+
+  it('has no visible outline otherwise', async () => {
+    await renderRow();
+
+    expect(screen.getByTestId('item-row')).toHaveStyle({ borderColor: 'transparent' });
   });
 });

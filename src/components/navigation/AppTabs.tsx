@@ -1,13 +1,14 @@
 import { NativeTabs } from 'expo-router/native-tabs';
-import colors from 'tailwindcss/colors';
+
+import { COLORS } from '@/constants/theme';
 
 /** Native bottom tabs. */
 export function AppTabs() {
   return (
     <NativeTabs
-      backgroundColor={colors.black}
-      indicatorColor={colors.zinc[900]}
-      labelStyle={{ selected: { color: colors.white } }}
+      backgroundColor={COLORS.background}
+      indicatorColor={COLORS.surface}
+      labelStyle={{ selected: { color: COLORS.onSurface } }}
     >
       <NativeTabs.Trigger name="index">
         <NativeTabs.Trigger.Label>Scan</NativeTabs.Trigger.Label>

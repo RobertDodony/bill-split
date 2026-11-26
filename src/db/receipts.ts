@@ -74,7 +74,14 @@ export async function addItem(db: SQLiteDatabase, receiptId: number): Promise<Re
     0,
     position
   );
-  return { id: res.lastInsertRowId, receipt_id: receiptId, name: '', price: 0, position };
+  return {
+    id: res.lastInsertRowId,
+    receipt_id: receiptId,
+    name: '',
+    price: 0,
+    position,
+    r_share: null,
+  };
 }
 
 export async function updateItem(db: SQLiteDatabase, id: number, fields: ItemFields) {

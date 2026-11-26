@@ -50,8 +50,8 @@ describe('receipts db', () => {
         detected_total: 928,
       });
       expect(await getItems(db, id)).toEqual([
-        { id: 1, receipt_id: id, name: 'KENYÉR', price: 599, position: 0 },
-        { id: 2, receipt_id: id, name: 'TEJ', price: 329, position: 1 },
+        { id: 1, receipt_id: id, name: 'KENYÉR', price: 599, position: 0, r_share: null },
+        { id: 2, receipt_id: id, name: 'TEJ', price: 329, position: 1, r_share: null },
       ]);
     });
 
@@ -166,7 +166,14 @@ describe('receipts db', () => {
 
       const item = await addItem(db, id);
 
-      expect(item).toEqual({ id: 3, receipt_id: id, name: '', price: 0, position: 2 });
+      expect(item).toEqual({
+        id: 3,
+        receipt_id: id,
+        name: '',
+        price: 0,
+        position: 2,
+        r_share: null,
+      });
       expect(await getItems(db, id)).toContainEqual(item);
     });
 

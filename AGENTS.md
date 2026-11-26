@@ -22,7 +22,7 @@ yarn expo install <package>  # ALWAYS use instead of yarn add — resolves SDK-c
 yarn expo start              # start the dev server
 yarn lint                    # oxlint, type-aware (config: .oxlintrc.json); fails on warnings
 yarn lint:fix                # oxlint with auto-fix
-yarn fmt                     # format with oxfmt (config: .oxfmtrc.json; sorts imports and Tailwind classes)
+yarn fmt                     # format with oxfmt (config: .oxfmtrc.json; sorts imports)
 yarn fmt:check               # check formatting without writing
 yarn tsc --noEmit            # typecheck
 yarn test                    # unit tests (Jest + jest-expo)
@@ -72,15 +72,15 @@ Don't add ESLint or Prettier. Disable an oxlint rule only with an
 
 Code is layered; each layer only calls the ones below it.
 
-| Layer             | Folder                         | Rules                                                                               |
-| ----------------- | ------------------------------ | ----------------------------------------------------------------------------------- |
-| Screens           | `src/app/`                     | Routes only. Thin: layout plus calls into one hook. No direct DB or service calls.  |
-| Components        | `src/components/`              | Presentational. Data comes in through props, changes go out through callbacks.      |
-| Hooks             | `src/hooks/`                   | React state and side effects behind a screen (`useReceipt`, `useReceiptScanner`).   |
-| Services          | `src/services/`                | Device integrations: OCR, file storage, the scan pipeline.                          |
-| Database          | `src/db/`                      | SQL only. Every function takes the `SQLiteDatabase` as its first argument.          |
-| Utils             | `src/utils/`                   | Pure functions with no React, native modules or I/O (parsing, formatting).          |
-| Types / constants | `src/types/`, `src/constants/` | Shared types (DB row types mirror the `snake_case` columns) and shared class names. |
+| Layer             | Folder                         | Rules                                                                                     |
+| ----------------- | ------------------------------ | ----------------------------------------------------------------------------------------- |
+| Screens           | `src/app/`                     | Routes only. Thin: layout plus calls into one hook. No direct DB or service calls.        |
+| Components        | `src/components/`              | Presentational. Data comes in through props, changes go out through callbacks.            |
+| Hooks             | `src/hooks/`                   | React state and side effects behind a screen (`useReceipt`, `useReceiptScanner`).         |
+| Services          | `src/services/`                | Device integrations: OCR, file storage, the scan pipeline.                                |
+| Database          | `src/db/`                      | SQL only. Every function takes the `SQLiteDatabase` as its first argument.                |
+| Utils             | `src/utils/`                   | Pure functions with no React, native modules or I/O (parsing, formatting).                |
+| Types / constants | `src/types/`, `src/constants/` | Shared types (DB row types mirror the `snake_case` columns), the theme and shared styles. |
 
 - **Database**: change the schema only by bumping `DATABASE_VERSION` in `src/db/migrations.ts` and
   adding a migration step; never edit an existing step. Write multi-row changes in a transaction.
@@ -101,16 +101,19 @@ Code is layered; each layer only calls the ones below it.
 
 ## Styling
 
-- Style with NativeWind `className`s (v4, Tailwind 3). Don't use `StyleSheet` or inline `style`
-  objects, and don't hard-code hex colors.
-- The app is dark-only and uses Tailwind's default palette (`bg-zinc-900`, `text-red-500`). There
-  are no `dark:` variants. Props that need a raw color (`placeholderTextColor`, the native tab bar)
-  read it from `tailwindcss/colors`.
-- Combine conditional classes with `cn()` from `@/utils/cn`.
-- Set text color with `ThemedText`'s `themeColor` prop, not in `className`.
-- Third-party components need `cssInterop` before they accept `className`; use the wrappers in
-  `src/components/ui/` (`Image`, `SafeAreaView`).
-- After changing `tailwind.config.ts`, `src/global.css` or `nativewind.options.js`, restart Metro with `yarn expo start --clear`.
+- UI comes from [React Native Paper](https://callstack.github.io/react-native-paper/) (Material 3):
+  `Text` (pick a `variant` from the type scale), `Button`, `IconButton`, `List.Item`,
+  `TouchableRipple`, `ActivityIndicator`. Use plain React Native for layout (`View`, `FlatList`)
+  and for the inline item inputs (`TextInput`). Sliders are `@react-native-community/slider`.
+- Style with `StyleSheet.create` at the bottom of the module. No inline `style` objects; combine
+  styles with arrays (`[styles.card, active && styles.active]`). Shared screen styles are
+  `SCREEN_STYLES` in `src/constants/layout.ts`.
+- Colors live only in `src/constants/theme.ts` (`PAPER_THEME`, provided in `src/app/_layout.tsx`).
+  Read them from `COLORS` (`COLORS.onSurfaceVariant` for muted text, `COLORS.error`,
+  `COLORS.personR`); never hard-code a hex value elsewhere. The app is dark-only, so styles use
+  `COLORS` directly rather than Paper's `useTheme`.
+- Paper icons are Material Community Icons by name (`icon="close"`), from `@expo/vector-icons`.
+  Give a `Button` with an `icon` an `accessibilityLabel`, or the icon's glyph ends up in its name.
 
 ## Tests
 
@@ -122,7 +125,7 @@ Code is layered; each layer only calls the ones below it.
 
 ## Building with EAS
 
-Use EAS to build, sign, and submit the app in the cloud (`eas build`, `eas submit`) and to ship over-the-air updates (`eas update`) — no local Xcode or Android Studio required. Run EAS CLI as `yarn dlx eas-cli <command>` (Yarn Berry) or `npx eas-cli@latest <command>`; substitute that for bare `eas` in docs examples.
+Use EAS to build, sign, and submit the app in the cloud (`eas build`, `eas submit`) and to ship over-the-air updates (`eas update`) — no local Android Studio required. EAS CLI isn't a project dependency and this project uses Yarn 1 (no `yarn dlx`), so run it as `npx eas-cli@latest <command>`; substitute that for bare `eas` in docs examples. Build profiles are in `eas.json`.
 Docs: https://docs.expo.dev/eas/index.md
 
 ## Rules
@@ -130,5 +133,5 @@ Docs: https://docs.expo.dev/eas/index.md
 - `android/` is generated (Continuous Native Generation) and gitignored. Never create or edit it by hand — configure native behavior in `app.json` and config plugins.
 - The app targets Android only. Don't add iOS- or web-specific code or config.
 - Expo Go only includes its bundled native modules. After adding a library with native code, the app needs a development build: `yarn expo run:android` locally, or `eas build --profile development`.
-- Prefer recommended Expo modules over third-party libraries, and check your available skills before adding dependencies. Docs: https://docs.expo.dev/versions/latest/index.md
+- Prefer recommended Expo modules over third-party libraries, and check your available skills before adding dependencies. React Native Paper is a deliberate exception for UI components; don't add `@expo/ui`, NativeWind or another component library alongside it. Docs: https://docs.expo.dev/versions/latest/index.md
 - Keep docs current: when a change makes `README.md` or this file wrong, update them in the same change.

@@ -8,10 +8,6 @@
   "sortImports": {
     "internalPattern": ["@/"]
   },
-  "sortTailwindcss": {
-    "config": "./tailwind.config.ts",
-    "functions": ["cn"]
-  },
   "ignorePatterns": [
     "android/**",
     "dist/**",

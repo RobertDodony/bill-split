@@ -1,7 +1,8 @@
-import { Pressable, View } from 'react-native';
+import { Image } from 'expo-image';
+import { StyleSheet, View } from 'react-native';
+import { List, Text } from 'react-native-paper';
 
-import { Image } from '@/components/ui/Image';
-import { ThemedText } from '@/components/ui/ThemedText';
+import { COLORS } from '@/constants/theme';
 import type { ReceiptSummary } from '@/types/receipt';
 import { formatDate } from '@/utils/date';
 import { formatPrice } from '@/utils/price';
@@ -16,26 +17,45 @@ export function ReceiptListItem({ receipt, onPress }: ReceiptListItemProps) {
   const itemCountLabel = `${receipt.item_count} ${receipt.item_count === 1 ? 'item' : 'items'}`;
 
   return (
-    <Pressable onPress={onPress} accessibilityRole="button" className="active:opacity-70">
-      <View className="flex-row items-center gap-4 rounded-2xl bg-zinc-900 p-2">
-        {receipt.image_uri ? (
+    <List.Item
+      title={formatDate(receipt.created_at)}
+      description={itemCountLabel}
+      onPress={onPress}
+      accessibilityRole="button"
+      style={styles.card}
+      left={() =>
+        receipt.image_uri ? (
           <Image
             testID="receipt-thumbnail"
             source={{ uri: receipt.image_uri }}
-            className="size-12 rounded-lg"
+            style={styles.thumbnail}
             contentFit="cover"
           />
         ) : (
-          <View testID="receipt-thumbnail-placeholder" className="size-12 rounded-lg bg-zinc-800" />
-        )}
-        <View className="flex-1">
-          <ThemedText type="smallBold">{formatDate(receipt.created_at)}</ThemedText>
-          <ThemedText type="small" themeColor="mutedForeground">
-            {itemCountLabel}
-          </ThemedText>
-        </View>
-        <ThemedText type="smallBold">{formatPrice(receipt.items_total)}</ThemedText>
-      </View>
-    </Pressable>
+          <View
+            testID="receipt-thumbnail-placeholder"
+            style={[styles.thumbnail, styles.placeholder]}
+          />
+        )
+      }
+      right={() => (
+        <Text variant="titleSmall" style={styles.total}>
+          {formatPrice(receipt.items_total)}
+        </Text>
+      )}
+    />
   );
 }
+
+const styles = StyleSheet.create({
+  card: {
+    overflow: 'hidden',
+    borderRadius: 16,
+    backgroundColor: COLORS.surface,
+    paddingLeft: 8,
+    paddingRight: 16,
+  },
+  thumbnail: { width: 48, height: 48, borderRadius: 8 },
+  placeholder: { backgroundColor: COLORS.surfaceVariant },
+  total: { alignSelf: 'center' },
+});

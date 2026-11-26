@@ -18,5 +18,13 @@ export function makeReceiptSummary(overrides: Partial<ReceiptSummary> = {}): Rec
 }
 
 export function makeItem(overrides: Partial<ReceiptItem> = {}): ReceiptItem {
-  return { id: 1, receipt_id: 1, name: 'Kenyér', price: 599, position: 0, ...overrides };
+  return {
+    id: 1,
+    receipt_id: 1,
+    name: 'Kenyér',
+    price: 599,
+    position: 0,
+    r_share: null,
+    ...overrides,
+  };
 }

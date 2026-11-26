@@ -1,12 +1,12 @@
 import { Stack } from 'expo-router';
 import { act, fireEvent, renderRouter, screen, testRouter } from 'expo-router/testing-library';
 import { Alert, Text, type AlertButton } from 'react-native';
-import colors from 'tailwindcss/colors';
 
 import ReceiptScreen from '@/app/receipt/[id]';
+import { COLORS } from '@/constants/theme';
 import { useReceipt } from '@/hooks/useReceipt';
 import { makeItem, makeReceipt } from '@/test-utils/fixtures';
-import { queryAllByProps } from '@/test-utils/queries';
+import { queryAllByProps, queryAllSliders } from '@/test-utils/queries';
 
 jest.mock('@/hooks/useReceipt');
 
@@ -18,6 +18,11 @@ function mockReceipt(overrides: Partial<ReturnType<typeof useReceipt>> = {}) {
     receipt: makeReceipt({ id: 7, detected_total: 928 }),
     items: [bread, milk],
     total: 928,
+    split: { itemCount: 2, splitCount: 0, r: 0, k: 0 },
+    activeItemId: 1,
+    initialShare: () => 50,
+    acceptSplit: jest.fn(),
+    selectItem: jest.fn(),
     updateItem: jest.fn(),
     deleteItem: jest.fn(),
     addItem: jest.fn(),
@@ -102,7 +107,7 @@ describe('ReceiptScreen', () => {
     const receipt = mockReceipt();
     await openReceipt();
 
-    await fireEvent.press(screen.getByRole('button', { name: '+ Add item' }));
+    await fireEvent.press(screen.getByRole('button', { name: 'Add item' }));
 
     expect(receipt.addItem).toHaveBeenCalled();
   });
@@ -127,6 +132,57 @@ describe('ReceiptScreen', () => {
     expect(receipt.deleteItem).toHaveBeenCalledWith(1);
   });
 
+  describe('splitting', () => {
+    it('shows the slider on the active item only', async () => {
+      mockReceipt();
+      await openReceipt();
+
+      expect(queryAllSliders(screen.container)).toHaveLength(1);
+      expect(screen.getByText('Not split yet')).toBeOnTheScreen();
+      expect(screen.getByText('0 of 2 items split')).toBeOnTheScreen();
+    });
+
+    it('starts the slider at the item’s initial share', async () => {
+      mockReceipt({ initialShare: () => 100 / 3 });
+      await openReceipt();
+
+      expect(screen.getByText('R 1/3 · 199,67')).toBeOnTheScreen();
+    });
+
+    it('accepts the active item’s split', async () => {
+      const receipt = mockReceipt();
+      await openReceipt();
+
+      await fireEvent.press(screen.getByRole('button', { name: 'Accept' }));
+
+      expect(receipt.acceptSplit).toHaveBeenCalledWith(1, 50);
+    });
+
+    it('opens another item’s split', async () => {
+      const receipt = mockReceipt();
+      await openReceipt();
+
+      await fireEvent.press(screen.getByRole('button', { name: 'Split item' }));
+
+      expect(receipt.selectItem).toHaveBeenCalledWith(2);
+    });
+
+    it('shows the sums for R and K once every item is split', async () => {
+      mockReceipt({
+        items: [
+          { ...bread, r_share: 100 },
+          { ...milk, r_share: 0 },
+        ],
+        activeItemId: null,
+        split: { itemCount: 2, splitCount: 2, r: 599, k: 329 },
+      });
+      await openReceipt();
+
+      expect(queryAllSliders(screen.container)).toHaveLength(0);
+      expect(screen.getByTestId('split-totals')).toHaveTextContent('R599K329');
+    });
+  });
+
   describe('deleting the receipt', () => {
     let alert: jest.SpyInstance;
 
@@ -143,7 +199,7 @@ describe('ReceiptScreen', () => {
       mockReceipt();
       await openReceipt();
 
-      expect(screen.getByText('Delete')).toHaveStyle({ color: colors.red[500] });
+      expect(screen.getByText('Delete')).toHaveStyle({ color: COLORS.error });
     });
 
     it('asks for confirmation first', async () => {
