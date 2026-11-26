@@ -9,6 +9,8 @@ export function makeReceipt(overrides: Partial<Receipt> = {}): Receipt {
     created_at: CREATED_AT,
     image_uri: 'file:///documents/receipts/1.jpg',
     detected_total: null,
+    paid_by: null,
+    settlement_id: null,
     ...overrides,
   };
 }

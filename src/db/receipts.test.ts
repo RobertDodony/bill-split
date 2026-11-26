@@ -48,6 +48,8 @@ describe('receipts db', () => {
         created_at: 1_000,
         image_uri: 'file:///r.jpg',
         detected_total: 928,
+        paid_by: null,
+        settlement_id: null,
       });
       expect(await getItems(db, id)).toEqual([
         { id: 1, receipt_id: id, name: 'KENYÉR', price: 599, position: 0, r_share: null },
@@ -92,6 +94,8 @@ describe('receipts db', () => {
           created_at: 2_000,
           image_uri: 'file:///n.jpg',
           detected_total: null,
+          paid_by: null,
+          settlement_id: null,
           item_count: 0,
           items_total: 0,
         },
@@ -100,6 +104,8 @@ describe('receipts db', () => {
           created_at: 1_000,
           image_uri: null,
           detected_total: null,
+          paid_by: null,
+          settlement_id: null,
           item_count: 2,
           items_total: 350.5,
         },
