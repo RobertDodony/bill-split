@@ -19,6 +19,12 @@ const TAX_NUMBER = 'ADOSZAM';
 /** A row starting with one of these holds the total; everything after it is payment details. */
 const TOTAL_KEYWORDS = ['OSSZESEN', 'OSSZEG', 'FIZETENDO', 'TOTAL'];
 
+/**
+ * "ÖSSZESEN" (total) is never part of an item name, so a row with it anywhere holds the total,
+ * even after a VAT code or a misread letter (`B00 ÖSSZESEN`, `0SSZESEN`).
+ */
+const TOTAL_WORD = 'OSSZESEN';
+
 /** Payment lines follow the total. Reaching one means the total row was missed: stop there. */
 const PAYMENT_KEYWORDS = [
   'BANKKARTYA',
@@ -41,6 +47,7 @@ const SKIP_KEYWORDS = [
   'KARTYA',
   'VISSZAJARO',
   'RESZOSSZEG',
+  'RESZOSSZESEN',
   'KEREKITES',
   'NAV',
   'AP ',
@@ -131,6 +138,14 @@ function isHeading(row: string) {
     .some((word) => withinOneEdit(word, HEADING));
 }
 
+/** True if the row holds the total: it starts with a total keyword or contains `TOTAL_WORD`. */
+function isTotalRow(key: string) {
+  return (
+    startsWithKeyword(key, TOTAL_KEYWORDS) ||
+    key.split(/[^A-Z]+/).some((word) => withinOneEdit(word, TOTAL_WORD))
+  );
+}
+
 /** Index of the first row that holds items: below the heading, else below the tax number. */
 function findItemsStart(rows: string[]) {
   const heading = rows.findIndex(isHeading);
@@ -180,7 +195,7 @@ export function parseReceiptRows(rows: string[]): ParsedReceipt {
     const key = normalize(row);
     const { name, price } = splitRow(row);
 
-    if (startsWithKeyword(key, TOTAL_KEYWORDS)) {
+    if (isTotalRow(key)) {
       if (price !== undefined) {
         return { items, detectedTotal: price };
       }

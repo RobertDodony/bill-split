@@ -172,6 +172,7 @@ describe('parseReceiptRows', () => {
         items([
           'KENYÉR 599',
           'RÉSZÖSSZEG 599',
+          'RÉSZÖSSZESEN 599',
           'ÁFA 27% 127',
           'KEREKÍTÉS -1',
           'AP A12345678',
@@ -250,6 +251,20 @@ describe('parseReceiptRows', () => {
 
     it('reads a later total keyword that has the amount', () => {
       expect(parseReceiptRows(['TOTAL', 'TOTAL 500']).detectedTotal).toBe(500);
+    });
+
+    it('never reads ÖSSZESEN as an item, even mid-row or misread', () => {
+      for (const total of [
+        'B00 ÖSSZESEN 928',
+        'Termékek összesen: 928 Ft',
+        '0SSZESEN 928',
+        'ÖSSZESFN: 928',
+      ]) {
+        expect(parseReceiptRows(['KENYÉR 599', total, 'TEJ 329'])).toEqual({
+          items: [{ name: 'KENYÉR', price: 599 }],
+          detectedTotal: 928,
+        });
+      }
     });
 
     it('only treats a keyword at the start of a row as the total', () => {
