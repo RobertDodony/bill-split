@@ -3,8 +3,10 @@ import { useEffect, useState } from 'react';
 
 import * as receiptsDb from '@/db/receipts';
 import * as splitsDb from '@/db/splits';
+import { useReceiptScanner } from '@/hooks/useReceiptScanner';
 import { deleteReceiptImage } from '@/services/receiptImages';
 import type { ItemFields, Person, Receipt, ReceiptItem } from '@/types/receipt';
+import { isReceiptComplete } from '@/utils/balance';
 import { sumPrices } from '@/utils/price';
 import { DEFAULT_SHARE, pickActiveItem, splitKey, summarizeSplit } from '@/utils/split';
 
@@ -14,6 +16,8 @@ import { DEFAULT_SHARE, pickActiveItem, splitKey, summarizeSplit } from '@/utils
  */
 export function useReceipt(receiptId: number) {
   const db = useSQLiteContext();
+  // The next receipt replaces this one, so Back from a run of receipts goes to the Scan tab.
+  const scanner = useReceiptScanner({ replace: true });
   const [receipt, setReceipt] = useState<Receipt | null>(null);
   const [items, setItems] = useState<ReceiptItem[]>([]);
   const [splitMemory, setSplitMemory] = useState<ReadonlyMap<string, number>>(new Map());
@@ -32,6 +36,9 @@ export function useReceipt(receiptId: number) {
   const split = summarizeSplit(items);
   /** The item whose split is being edited, or `null` when every item is split. */
   const activeItemId = pickActiveItem(items, selectedItemId);
+  const paidBy = receipt?.paid_by ?? null;
+  /** Has a payer and every item split: ready to move on to the next receipt. */
+  const complete = receipt != null && isReceiptComplete({ paid_by: paidBy, items });
 
   /** The split an item's slider starts at: its own, else the one remembered for its name. */
   const initialShare = (item: ReceiptItem) =>
@@ -86,8 +93,13 @@ export function useReceipt(receiptId: number) {
     activeItemId,
     initialShare,
     acceptSplit,
-    paidBy: receipt?.paid_by ?? null,
+    paidBy,
     setPaidBy,
+    complete,
+    /** Takes a photo of the next receipt and opens it in place of this one. */
+    scanNext: scanner.takePhoto,
+    /** True while the next receipt is being read. */
+    scanning: scanner.busy,
 
     selectItem: setSelectedItemId,
     updateItem,

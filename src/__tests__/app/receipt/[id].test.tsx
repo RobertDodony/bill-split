@@ -24,6 +24,9 @@ function mockReceipt(overrides: Partial<ReturnType<typeof useReceipt>> = {}) {
     acceptSplit: jest.fn(),
     paidBy: null,
     setPaidBy: jest.fn(),
+    complete: false,
+    scanNext: jest.fn(),
+    scanning: false,
     selectItem: jest.fn(),
     updateItem: jest.fn(),
     deleteItem: jest.fn(),
@@ -199,6 +202,32 @@ describe('ReceiptScreen', () => {
 
       expect(queryAllSliders(screen.container)).toHaveLength(0);
       expect(screen.getByTestId('split-totals')).toHaveTextContent('R599K329');
+    });
+  });
+
+  describe('scanning the next receipt', () => {
+    it('is offered once the receipt is complete', async () => {
+      const receipt = mockReceipt({ complete: true });
+      await openReceipt();
+
+      await fireEvent.press(screen.getByRole('button', { name: 'Scan next receipt' }));
+
+      expect(receipt.scanNext).toHaveBeenCalled();
+    });
+
+    it('is not offered before the receipt is complete', async () => {
+      mockReceipt({ complete: false });
+      await openReceipt();
+
+      expect(screen.queryByRole('button', { name: 'Scan next receipt' })).not.toBeOnTheScreen();
+    });
+
+    it('is disabled while the next receipt is being read', async () => {
+      mockReceipt({ complete: true, scanning: true });
+      await openReceipt();
+
+      expect(screen.getByRole('button', { name: 'Scan next receipt' })).toBeDisabled();
+      expect(screen.getByText('Reading receipt…')).toBeOnTheScreen();
     });
   });
 

@@ -9,7 +9,7 @@ import { scanReceipt, type ScanResult } from '@/services/scanReceipt';
 const mockDb = { name: 'test-db' };
 
 jest.mock('expo-sqlite', () => ({ useSQLiteContext: () => mockDb }));
-jest.mock('expo-router', () => ({ router: { push: jest.fn() } }));
+jest.mock('expo-router', () => ({ router: { push: jest.fn(), replace: jest.fn() } }));
 jest.mock('expo-image-picker', () => ({
   requestCameraPermissionsAsync: jest.fn(),
   launchCameraAsync: jest.fn(),
@@ -94,6 +94,21 @@ describe('useReceiptScanner', () => {
       await act(() => result.current.pickPhoto());
 
       expect(mockScan).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('with replace', () => {
+    it('opens the new receipt in place of the current screen', async () => {
+      picker.launchCameraAsync.mockResolvedValue(photo('file:///cache/cam.jpg'));
+      const { result } = await renderHook(() => useReceiptScanner({ replace: true }));
+
+      await act(() => result.current.takePhoto());
+
+      expect(router.replace).toHaveBeenCalledWith({
+        pathname: '/receipt/[id]',
+        params: { id: '42' },
+      });
+      expect(router.push).not.toHaveBeenCalled();
     });
   });
 

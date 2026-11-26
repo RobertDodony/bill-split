@@ -3,6 +3,7 @@ import { act, renderHook, waitFor } from '@testing-library/react-native';
 import * as receiptsDb from '@/db/receipts';
 import * as splitsDb from '@/db/splits';
 import { useReceipt } from '@/hooks/useReceipt';
+import { useReceiptScanner } from '@/hooks/useReceiptScanner';
 import { deleteReceiptImage } from '@/services/receiptImages';
 import { makeItem, makeReceipt } from '@/test-utils/fixtures';
 
@@ -12,8 +13,11 @@ jest.mock('expo-sqlite', () => ({ useSQLiteContext: () => mockDb }));
 jest.mock('@/db/receipts');
 jest.mock('@/db/splits');
 jest.mock('@/services/receiptImages');
+jest.mock('@/hooks/useReceiptScanner');
 
 const db = jest.mocked(receiptsDb);
+const mockScanner = jest.mocked(useReceiptScanner);
+const takePhoto = jest.fn();
 const splits = jest.mocked(splitsDb);
 
 const receipt = makeReceipt({ id: 7, detected_total: 928 });
@@ -31,6 +35,7 @@ describe('useReceipt', () => {
     db.getReceipt.mockResolvedValue(receipt);
     db.getItems.mockResolvedValue([bread, milk]);
     splits.getSplitMemory.mockResolvedValue(new Map());
+    mockScanner.mockReturnValue({ busy: false, takePhoto, pickPhoto: jest.fn() });
   });
 
   it('loads the receipt and its items', async () => {
@@ -113,6 +118,60 @@ describe('useReceipt', () => {
 
     expect(db.setPaidBy).toHaveBeenCalledWith(mockDb, 7, 'R');
     expect(result.current.paidBy).toBe('R');
+  });
+
+  describe('scanning the next receipt', () => {
+    const splitItems = [
+      { ...bread, r_share: 50 },
+      { ...milk, r_share: 100 },
+    ];
+
+    it('is complete once it has a payer and every item is split', async () => {
+      db.getReceipt.mockResolvedValue({ ...receipt, paid_by: 'R' });
+      db.getItems.mockResolvedValue(splitItems);
+      const { result } = await renderLoaded();
+
+      await waitFor(() => expect(result.current.complete).toBe(true));
+    });
+
+    it('is not complete without a payer', async () => {
+      db.getItems.mockResolvedValue(splitItems);
+      const { result } = await renderLoaded();
+
+      expect(result.current.complete).toBe(false);
+    });
+
+    it('is not complete while an item is unsplit', async () => {
+      db.getReceipt.mockResolvedValue({ ...receipt, paid_by: 'R' });
+      const { result } = await renderLoaded();
+
+      expect(result.current.complete).toBe(false);
+    });
+
+    it('becomes complete when the payer is picked last', async () => {
+      db.getItems.mockResolvedValue(splitItems);
+      const { result } = await renderLoaded();
+
+      await act(() => result.current.setPaidBy('K'));
+
+      expect(result.current.complete).toBe(true);
+    });
+
+    it('opens the next receipt in place of this one', async () => {
+      const { result } = await renderLoaded();
+
+      await act(() => result.current.scanNext());
+
+      expect(mockScanner).toHaveBeenCalledWith({ replace: true });
+      expect(takePhoto).toHaveBeenCalled();
+    });
+
+    it('is scanning while the scanner is busy', async () => {
+      mockScanner.mockReturnValue({ busy: true, takePhoto, pickPhoto: jest.fn() });
+      const { result } = await renderLoaded();
+
+      expect(result.current.scanning).toBe(true);
+    });
   });
 
   it('deletes the receipt and its photo', async () => {

@@ -26,6 +26,9 @@ export default function ReceiptScreen() {
     acceptSplit,
     paidBy,
     setPaidBy,
+    complete,
+    scanNext,
+    scanning,
     selectItem,
     updateItem,
     deleteItem,
@@ -119,6 +122,19 @@ export default function ReceiptScreen() {
                 detectedTotal={receipt?.detected_total ?? null}
               />
               <SplitTotals split={split} />
+              {complete ? (
+                // Labelled explicitly so the camera icon glyph isn't part of the button's name.
+                <Button
+                  mode="contained"
+                  icon="camera"
+                  onPress={scanNext}
+                  loading={scanning}
+                  disabled={scanning}
+                  accessibilityLabel="Scan next receipt"
+                >
+                  {scanning ? 'Reading receipt…' : 'Scan next receipt'}
+                </Button>
+              ) : null}
             </View>
           }
         />
